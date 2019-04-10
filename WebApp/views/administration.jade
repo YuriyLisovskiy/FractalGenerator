@@ -1,0 +1,129 @@
+extends includes/layout
+
+block title
+	title Art Store | Administration
+
+block head
+	link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
+	link(rel="stylesheet", href="/static/css/administration.css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
+
+block body
+	div(class="modal fade", id="promotionModal")
+		div(class="modal-dialog")
+			div(class="modal-content")
+				div(class="modal-header")
+					h4(class="modal-title" id="promotion-modal-title")
+					button(type="button" class="close" data-dismiss="modal") &times;
+				div(class="modal-body", id="promotion-goods-modal-body")
+	div(class="container")
+		div(class="modal fade", id="orderedGoodsModal")
+			div(class="modal-dialog")
+				div(class="modal-content")
+					div(class="modal-header")
+						h4(class="modal-title" id="order-modal-title")
+						button(type="button" class="close" data-dismiss="modal") &times;
+					div(class="modal-body", id="ordered-goods-modal-body")
+	div(class="container")
+		h3(class="admin-title") Administration
+		ul(class="nav nav-tabs", role="tablist")
+			li(class="nav-item")
+				a(class="nav-link", data-toggle="tab", id="goods-tab", href="#goods") Goods
+			li(class="nav-item")
+				a(class="nav-link", data-toggle="tab", id="promotions-tab", href="#promotions") Promotions
+			li(class="nav-item")
+				a(class="nav-link", id="orders-tab", data-toggle="tab", href="#orders") Orders
+		div(class="tab-content")
+			div(id="goods", class="container tab-pane")
+				br
+				ul(class="nav nav-tabs", role="tablist")
+					li(class="nav-item")
+						a(class="nav-link active", id="available-goods-tab", data-toggle="tab", href="#available-goods") Available
+					li(class="nav-item")
+						a(class="nav-link", data-toggle="tab", href="#create-goods") Create
+				div(class="tab-content")
+					div(id="available-goods", class="container tab-pane active")
+						br
+						table(class="table")
+							thead(class="thead-dark")
+								tr
+									th Title
+									th Price
+									th Description
+									th Manage
+							tbody(id="available-goods-tbody")
+						button(class="btn btn-secondary", id="show-more-goods-tab") Load more
+					div(id="create-goods", class="container tab-pane fade")
+						br
+						form(method="post", enctype="multipart/form-data")
+							div(class="form-group row")
+								label(for="goods-title" class="col-sm-4") Title:
+									input(type="text", name="title", class="form-control", id="goods-title", placeholder="Type text...", required)
+								label(for="goods-price", class="col-sm-4") Price:
+									input(type="number", step="0.01", name="price", class="form-control", id="goods-price", placeholder="USD...", required)
+								label(for="goods-picture", class="col-sm-4") Picture:
+									input(type="file", name="picture", class="form-control", id="goods-picture")
+							div(class="form-group row")
+								label(for="goods-description", class="col-sm-12") Description:
+									textarea(rows="7", name="description", class="form-control", id="goods-description")
+							div(class="form-group row")
+								label(for="select-promotion" class="col-sm-12") Promotion:
+									select(class="form-control", id="select-promotion", name="promotion")
+										option(value="none") None
+										- for (let i = 0; i < promotions.length; i++) {
+											option(value=promotions[i].id)=promotions[i].comment
+										- }
+							button(type="submit", id="save-goods", class="btn btn-success") Save
+			div(id="promotions", class="container tab-pane")
+				br
+				ul(class="nav nav-tabs", role="tablist")
+					li(class="nav-item")
+						a(class="nav-link active", id="available-promotions-tab", data-toggle="tab", href="#available-promotions") Available
+					li(class="nav-item")
+						a(class="nav-link", data-toggle="tab", href="#create-promotion") Create
+				div(class="tab-content")
+					div(id="available-promotions", class="container tab-pane active")
+						br
+						table(class="table")
+							thead(class="thead-dark")
+								tr
+									th Id
+									th Percentage
+									th Comment
+									th Goods
+									th Manage
+							tbody(id="available-promotions-tbody")
+						button(class="btn btn-secondary", id="show-more-promotions-tab") Load more
+					div(id="create-promotion", class="container tab-pane fade")
+						br
+						form(method="post", action="/api/promotions")
+							div(class="form-group row")
+								label(for="promotion-percentage", class="col-sm-6") Percentage:
+									input(type="number", max="100", step="0.1", name="percentage", class="form-control", id="promotion-percentage", placeholder="Type number...", required)
+								label(for="promotion-comment", class="col-sm-6") Comment:
+									input(type="text", name="comment", class="form-control", id="promotion-comment", placeholder="Type text...")
+							div(class="form-group row", id="select-goods-form-group")
+								label(for="select-goods") Goods:
+								select(size="10", multiple class="form-control", name="goods", id="select-goods")
+								button(type="button", class="btn btn-secondary", id="select-goods-reload-btn")
+									i(class="fa fa-refresh", aria-hidden="true")
+							button(type="submit", id="save-promotion", class="btn btn-success") Save
+			div(id="orders", class="container tab-pane")
+				br
+				table(class="table", id="orders-table")
+					thead(class="thead-light")
+						tr
+							th First name
+							th Last name
+							th Destination
+							th Phone
+							th Email
+							th Goods
+							th Status
+					tbody(id="orders-table-body")
+				button(class="btn btn-secondary", id="show-more-orders") Load more
+
+block footer
+	script(type="module", src="/static/js/administration/goods.js")
+	script(type="module", src="/static/js/administration/promotions.js")
+	script(type="module", src="/static/js/administration/orders.js")

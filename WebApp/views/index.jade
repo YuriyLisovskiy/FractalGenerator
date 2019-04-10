@@ -1,0 +1,72 @@
+extends includes/layout
+
+block title
+	title Art Store | Goods
+
+block head
+	link(rel="stylesheet", href="/static/css/index.css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
+
+block body
+	if open_login
+		div(class="alert alert-info", style="text-align: center;")
+			strong Your account has been verified successfully. Try to sign in.
+	else if is_registered
+		div(class="alert alert-success", style="text-align: center;")
+			strong Check out your email box for verification link.
+	else if errors
+		div(class="alert alert-danger", style="text-align: center;")
+			strong=errors
+	div(class="modal fade", id="loginModal")
+		div(class="modal-dialog")
+			div(class="modal-content")
+				div(class="modal-header")
+					h4(class="modal-title") Login to your account
+					button(type="button", class="close", data-dismiss="modal") &times;
+				div(class="modal-body")
+					div(class="form-group")
+						label(for="username-login") Username:
+						input(type="text", class="form-control", id="username-login")
+					div(class="form-group")
+						label(for="password-login") Password:
+						input(type="password", class="form-control", id="password-login")
+				div(class="modal-footer")
+					button(type="button", class="btn", data-dismiss="modal") Close
+					button(type="button", id="btn-login", class="btn btn-secondary") Submit
+	div(class="modal fade", id="signUpModal")
+		div(class="modal-dialog")
+			div(class="modal-content")
+				form(method="post", action="/register")
+					div(class="modal-header")
+						h4(class="modal-title") Register a new account
+						button(type="button", class="close", data-dismiss="modal") &times;
+					div(class="modal-body")
+						div(class="form-group")
+							label(for="email-register") Email:
+							input(type="email", name="email", class="form-control", id="email-register", required)
+						div(class="form-group")
+							label(for="username-register") Username:
+							input(type="text", name="username", class="form-control", id="username-register", required)
+						div(class="form-group")
+							label(for="password-register") Password:
+							input(type="password", name="password", class="form-control", id="password-register", required)
+					div(class="modal-footer")
+						button(type="button", class="btn", data-dismiss="modal") Close
+						button(type="submit", id="btn-register", class="btn btn-secondary") Submit
+	div(class="container", id="container")
+		div(class="form-group")
+			label(for="sort-by") Sort by:
+			select(class="form-control", id="sort-by", name="sort_by")
+				option(value="price_asc") From cheap to expensive
+				option(value="price_desc") From expensive to cheap
+				option(value="title_asc" selected) Title ascending
+				option(value="title_desc") Title descending
+		div(class="container", id="inner-container")
+
+block footer
+	script(type="module", src="/static/js/index/auth.js")
+	script(type="module", src="/static/js/index/goods.js")
+	script.
+		$('body').on('click', '[data-toggle="popover"]', function () {
+			$(this).popover().popover('show');
+		});

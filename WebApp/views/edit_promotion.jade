@@ -1,0 +1,18 @@
+extends includes/layout
+
+block title
+	title Art Store | #{item.comment}
+
+block head
+	link(rel="stylesheet", href="/static/css/edit_promotion.css")
+
+block body
+	div(class="container")
+		h3(class="edit-promotion-title")=item.comment
+		form(method="post")
+			div(class="form-group row")
+				label(for="promotion-percentage", class="col-sm-6") Percentage:
+					input(value=item.percentage, type="number", max="100", step="0.1", name="percentage", class="form-control", id="promotion-percentage", placeholder="Type number...", required)
+				label(for="promotion-comment", class="col-sm-6") Comment:
+					input(value=item.comment, type="text", name="comment", class="form-control", id="promotion-comment", placeholder="Type text...")
+			button(type="submit", id="save-promotion", class="btn btn-success") Save

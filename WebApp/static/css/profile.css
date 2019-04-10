@@ -1,0 +1,33 @@
+#save-profile {
+	float: right;
+}
+
+.cart-title {
+	text-align: center;
+}
+
+.no-goods-in-cart-title {
+	text-align: center;
+
+}
+
+.admin-title {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.goods-logo {
+	width: 50px;
+	height: auto;
+}
+
+.goods-amount {
+	text-align: center;
+	margin-top: 6px;
+}
+
+.total-sum {
+	text-align: right;
+	margin-top: 50px;
+	margin-right: 30px;
+}

@@ -1,0 +1,33 @@
+extends includes/layout
+
+block title
+	title Art Store | #{item.title}
+
+block head
+	link(rel="stylesheet", href="/static/css/edit_goods.css")
+
+block body
+	div(class="container")
+		h3(class="edit-goods-title")=item.title
+		form(method="post", enctype="multipart/form-data")
+			div(class="form-group row")
+				label(for="goods-title", class="col-sm-4") Title:
+					input(value=item.title, type="text", name="title", class="form-control", id="goods-title", placeholder="Type text...", required)
+				label(for="goods-price", class="col-sm-4") Price:
+					input(value=item.price, type="number", step="0.01", name="price", class="form-control", id="goods-price", placeholder="USD...", required)
+				label(for="goods-picture", class="col-sm-4") Picture:
+					input(type="file", name="picture", class="form-control", id="goods-picture")
+			div(class="form-group row")
+				label(for="goods-description", class="col-sm-12") Description:
+					textarea(rows="7", name="description", class="form-control", id="goods-description")=item.description
+			div(class="form-group row")
+				label(for="select-promotion" class="col-sm-12") Promotion:
+					select(class="form-control", id="select-promotion", name="promotion")
+						option(value="none") None
+						- for (let i = 0; i < promotions.length; i++) {
+							if (promotions[i].id === item.promotion)
+								option(value=promotions[i].id selected)=promotions[i].comment
+							else
+								option(value=promotions[i].id)=promotions[i].comment
+						-}
+			button(type="submit", id="save-goods", class="btn btn-success") Save

@@ -1,0 +1,139 @@
+extends includes/layout
+
+block title
+	if user.first_name && user.last_name
+		title Art Store | #{user.first_name} #{user.last_name}
+	else
+		title Art Store | #{user.username}
+
+block head
+	link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
+	link(rel="stylesheet", href="/static/css/profile.css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
+
+block body
+	div(class="container")
+		div(class="modal fade", id="orderedGoodsModal")
+			div(class="modal-dialog")
+				div(class="modal-content")
+					div(class="modal-header")
+						h4(class="modal-title" id="order-modal-title")
+						button(type="button" class="close" data-dismiss="modal") &times;
+					div(class="modal-body", id="ordered-goods-modal-body")
+		br
+		ul(class="nav nav-tabs", role="tablist")
+			li(class="nav-item")
+				a(class="nav-link", id="profile-tab", data-toggle="tab", href="#profile") Profile
+			li(class="nav-item")
+				a(class="nav-link", id="orders-tab", data-toggle="tab", href="#orders") Orders
+			li(class="nav-item")
+				a(class="nav-link", id="cart-tab", data-toggle="tab", href="#cart") Cart
+		div(class="tab-content")
+			div(id="profile", class="container tab-pane")
+				br
+				form(method="post")
+					div(class="form-group row")
+						label(for="first-name", class="col-sm-4") First name:
+							input(value=user.first_name, type="text", name="first_name", class="form-control", id="first-name", placeholder="Type text...")
+						label(for="last-name", class="col-sm-4") Last name:
+							input(value=user.last_name, type="text", name="last_name", class="form-control", id="last-name", placeholder="Type text...")
+						label(for="username", class="col-sm-4") Username:
+							input(value=user.username, type="text", name="username", class="form-control", id="username", placeholder="Type text...", required)
+					div(class="form-group row")
+						label(for="full-address", class="col-sm-12") Full address:
+							input(value=user.address, type="text", name="address", class="form-control", id="full-address", placeholder="Type text...")
+					div(class="form-group row")
+						label(for="phone", class="col-sm-6") Phone:
+							input(value=user.phone, type="text", name="phone", class="form-control", id="phone", placeholder="+380000000000")
+						label(for="email", class="col-sm-6") Email:
+							input(value=user.email, type="email", name="email", class="form-control", id="email", placeholder="username@example.com", required)
+					button(type="submit", id="save-profile", class="btn btn-success") Save
+			div(id="orders", class="container tab-pane")
+				br
+				table(class="table", id="orders-table")
+					thead(class="thead-light")
+						tr
+							th First name
+							th Last name
+							th Destination
+							th Phone
+							th Email
+							th Goods
+							th Status
+					tbody(id="orders-table-body")
+				button(class="btn btn-secondary", id="show-more-orders") Load more
+
+			div(id="cart", class="container tab-pane")
+				br
+				if goods.length > 0
+					- let totalSum = 0;
+					table(class="table", id="goods-table")
+						thead(class="thead-light")
+							tr
+								th Code
+								th Image
+								th Title
+								th Price
+								th Description
+								th
+								th Amount
+								th
+								th
+						tbody(id="goods-table-body")
+							each item in goods
+								tr(id="goods-item-#{item.code}")
+									th=item.code
+									if item.image
+										th
+											img(class="goods-logo", src=item.image, alt="goods image")
+									else
+										th
+											img(class="goods-logo", src="https://vignette.wikia.nocookie.net/cartoonsserbia/images/4/42/Image-not-available_1.jpg/revision/latest?cb=20180603222946", alt="goods image")
+									th(style="text-overflow: word-wrap;")=item.title
+									if item.discount_percentage
+										- let discount_price = Number(item.price - item.price * item.discount_percentage / 100).toFixed(2);
+										- totalSum += discount_price * item.amount
+										th(id="item-price-#{item.code}", value=discount_price)
+											p $ #{discount_price}
+									else
+										- totalSum += item.price * item.amount
+										th(id="item-price-#{item.code}", value=item.price) $ #{item.price}
+									th(style="text-overflow: word-wrap;")=item.description
+									th
+										button(class="btn btn-default", name="decrease-goods", value=item.code)
+											i(class="fa fa-minus")
+									th
+										p(class="goods-amount", id="amount-#{item.code}", value=item.amount)=item.amount
+									th
+										button(class="btn btn-default", name="increase-goods", value=item.code)
+											i(class="fa fa-plus")
+									th
+										button(class="btn btn-secondary", name="remove-goods", value="#{item.code}") Remove
+					h5(class="total-sum")
+						p Total:
+						p(id="total-sum", value=totalSum) $ #{totalSum.toFixed(2)}
+					form(method="post", action="/orders/create", id="order-form")
+						div(class="form-group row")
+							label(for="first-name", class="col-sm-6") First name:
+								- let f_n = user.first_name ? user.first_name : '';
+								input(value=f_n, type="text", name="first_name", class="form-control", id="first-name-order", placeholder="Type text...", required)
+							label(for="last-name", class="col-sm-6") Last name:
+								- let l_n = user.last_name ? user.last_name : '';
+								input(value=l_n, type="text", name="last_name", class="form-control", id="last-name-order", placeholder="Type text...", required)
+						div(class="form-group row")
+							label(for="email-order", class="col-sm-6") Email:
+								input(value=user.email, type="email", name="email", class="form-control", id="email-order", placeholder="username@example.com")
+							label(for="phone-order", class="col-sm-6") Phone:
+								- let ph = user.phone ? user.phone : '';
+								input(value=ph, type="text", name="phone", class="form-control", id="phone-order", placeholder="+380000000000", required)
+						div(class="form-group row")
+							label(for="full-address-order", class="col-sm-12") Full address:
+								- let addr = user.address ? user.address : '';
+								input(value=addr, type="text", name="address", class="form-control", id="full-address-order", placeholder="Type text...", required)
+						button(type="submit", id="create-order", class="btn btn-success") Save
+				else
+					h4(class="text-muted no-goods-in-cart-title") No goods in cart
+
+block footer
+	script(type="module", src="/static/js/profile/profile.js")
+	script(type="module", src="/static/js/profile/orders.js")
