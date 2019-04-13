@@ -2,9 +2,9 @@ extends includes/layout
 
 block title
 	if user.first_name && user.last_name
-		title Art Store | #{user.first_name} #{user.last_name}
+		title Fractals Generator | #{user.first_name} #{user.last_name}
 	else
-		title Art Store | #{user.username}
+		title Fractals Generator | #{user.username}
 
 block head
 	link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")

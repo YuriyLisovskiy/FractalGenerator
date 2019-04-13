@@ -13,12 +13,6 @@ document.addEventListener('DOMContentLoaded', function domLoaded() {
 			util.setCookie('active_tab_profile', 'profile', 1);
 		});
 	}
-	let btnCart = document.getElementById('btn-cart');
-	if (btnCart) {
-		btnCart.addEventListener('click', () => {
-			util.setCookie('active_tab_profile', 'cart', 1);
-		});
-	}
 	$(document).ready(function(){
 		$('[data-toggle="tooltip"]').tooltip();
 	});

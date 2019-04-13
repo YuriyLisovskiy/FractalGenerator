@@ -77,53 +77,48 @@ let Register = (request, response) => {
 		post: (request, response) => {
 			let credentials = request.body;
 			db.getUser(credentials.username, credentials.email,
-				(user) => {
-					if (user) {
-						util.Render(request, response, 'index', {errors: 'User already exists.'});
-					} else {
-						db.createUser(
-							credentials.username,
-							credentials.email,
-							credentials.password,
-							() => {
-								db.getUser(credentials.username, credentials.email,
-									(user) => {
-										jwt.sign(user, settings.SecretKey, { expiresIn: '1h' }, (err, token) => {
-											if (err) {
-												console.log(err);
-												util.SendBadRequest(response);
-											} else {
-												sendEmail(
-													credentials.email,
-													'Registration on Art Store',
-													`Use this link to verify Your account:\n${settings.host}/user/verify/${token}\n\nThank You for registering on our website.`,
-													(detail) => {
-														util.Render(request, response, 'index', {is_registered: detail});
-													},
-													(err) => {
-														console.log('[ERROR] auth.Register, post, sendEmail: ' + err.detail);
-														util.SendInternalServerError(response, err.detail);
-													}
-												);
-											}
-										});
-									},
-									(err) => {
-										console.log('[ERROR] auth.Register, post, getUser: ' + err.detail);
-										util.SendInternalServerError(response, err.detail);
-									}
-								);
-							},
-							(err) => {
-								console.log('[ERROR] auth.Register, post, createUser: ' + err.detail);
-								util.SendInternalServerError(response, err.detail);
-							}
-						);
-					}
+				() => {
+					util.Render(request, response, 'index', {errors: 'User already exists.'});
 				},
-				(err) => {
-					console.log('[ERROR] auth.Register, getUser: ' + err.detail);
-					util.SendInternalServerError(response, 'unable to retrieve user');
+				() => {
+					db.createUser(
+						credentials.username,
+						credentials.email,
+						credentials.password,
+						() => {
+							db.getUser(credentials.username, credentials.email,
+								(user) => {
+									jwt.sign(user, settings.SecretKey, { expiresIn: '1h' }, (err, token) => {
+										if (err) {
+											console.log(err);
+											util.SendBadRequest(response);
+										} else {
+											sendEmail(
+												credentials.email,
+												'Registration on Fractal Generator',
+												`Use this link to verify Your account:\n${settings.host}/user/verify/${token}\n\nThank You for registering on our website.`,
+												(detail) => {
+													util.Render(request, response, 'index', {is_registered: detail});
+												},
+												(err) => {
+													console.log('[ERROR] auth.Register, post, sendEmail: ' + err.detail);
+													util.SendInternalServerError(response, err.detail);
+												}
+											);
+										}
+									});
+								},
+								(err) => {
+									console.log('[ERROR] auth.Register, post, getUser: ' + err.detail);
+									util.SendInternalServerError(response, err.detail);
+								}
+							);
+						},
+						(err) => {
+							console.log('[ERROR] auth.Register, post, createUser: ' + err.detail);
+							util.SendInternalServerError(response, err.detail);
+						}
+					);
 				}
 			);
 		}

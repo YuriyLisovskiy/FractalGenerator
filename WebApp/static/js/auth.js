@@ -1,4 +1,4 @@
-import util from '../util.js'
+import util from './util.js'
 
 let credentialsAreValid = ({username, password}, success, error) => {
 	let errors = '';

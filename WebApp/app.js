@@ -4,8 +4,8 @@ let cookieParser = require('cookie-parser');
 let fs = require('fs');
 
 let router = require('./routes/index');
-
-let port = process.env.PORT || 3000;
+let adminRouter = require('./routes/administration');
+let apiRouter = require('./routes/api');
 
 let app = express();
 
@@ -19,6 +19,9 @@ app.use('/static', express.static('static'));
 app.use('/media', express.static('media'));
 
 app.use('/', router);
+app.use('/api', apiRouter);
+app.use('/administration', adminRouter);
+
 
 app.use(function(req, res){
 	res.status(404);
@@ -31,4 +34,4 @@ app.use(function(req, res){
 
 fs.existsSync('./media') || fs.mkdirSync('./media');
 
-app.listen(port);
+app.listen(3000, '127.0.0.1');

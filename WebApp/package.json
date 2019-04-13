@@ -1,7 +1,7 @@
 {
   "name": "webappsdev",
   "version": "1.0.0",
-  "description": "Programming and support of web applications",
+  "description": "Fractal Generator web application",
   "main": "app.js",
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -14,6 +14,7 @@
     "mv": "^2.1.1",
     "nodemailer": "^5.1.1",
     "nodemon": "^1.18.10",
+    "pg": "^7.9.0",
     "sqlite3": "^4.0.6"
   },
   "devDependencies": {},
@@ -23,14 +24,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YuriyLisovskiy/WebAppsDev.git"
+    "url": "git+https://github.com/YuriyLisovskiy/FractalGenerator.git"
   },
   "author": "YuriyLisovskiy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YuriyLisovskiy/WebAppsDev/issues"
+    "url": "https://github.com/YuriyLisovskiy/FractalGenerator/issues"
   },
-  "homepage": "https://github.com/YuriyLisovskiy/WebAppsDev#readme",
+  "homepage": "https://github.com/YuriyLisovskiy/FractalGenerator#readme",
   "engines": {
     "node": "8.10.*"
   }

@@ -61,19 +61,7 @@ let HandleRequest = ({request, response, get, post, put, delete_}) => {
 						if (user) {
 							request.user = user;
 							request.user.is_authenticated = true;
-							db.countGoodsAmountInUserCart(user.id,
-								(goods_amount) => {
-									if (!goods_amount) {
-										goods_amount = 0;
-									}
-									request.user.goods_in_cart_num = goods_amount;
-									finished();
-								},
-								(err) => {
-									console.log('[ERROR] util.HandleRequest: countGoodsAmountInUserCart: ' + err.detail);
-									SendInternalServerError(response, 'unable to count cart\'s goods amount');
-								}
-							);
+							finished();
 						} else {
 							SendNotFound(response, 'User is not found');
 						}
@@ -98,26 +86,22 @@ let HandleRequest = ({request, response, get, post, put, delete_}) => {
 	}
 };
 
-let HandleAuthRequest = ({request, response, get, post, put, delete_}) => {
+let HandleAuthRequest = ({request, response, sudo_request, get, post, put, delete_}) => {
 	response['send_json'] = request.headers['accept'] === 'application/json';
 	VerifyToken(request.cookies['auth_token'], settings.SecretKey,
 		(data) => {
 			db.getUser(data.username, null, (user) => {
 				if (user) {
-					request['user'] = user;
-					request.user['is_authenticated'] = true;
-					delete request.user.password;
-					db.countGoodsAmountInUserCart(user.id,
-						(goods_amount) => {
-							request.user['goods_in_cart_num'] = goods_amount;
-							HandleRequest(
-								{request: request, response: response, get: get, post: post, put: put, delete_: delete_}
-							);
-						},
-						() => {
-							SendInternalServerError(response, 'unable to count cart\'s goods amount');
-						}
-					);
+					if (sudo_request && !user.is_superuser) {
+						SendForbidden(response, 'Super user privileges required');
+					} else {
+						request['user'] = user;
+						request.user['is_authenticated'] = true;
+						delete request.user.password;
+						HandleRequest(
+							{request: request, response: response, get: get, post: post, put: put, delete_: delete_}
+						);
+					}
 				} else {
 					SendNotFound(response, 'User is not found');
 				}
