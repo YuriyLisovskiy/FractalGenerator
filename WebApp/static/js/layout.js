@@ -7,12 +7,6 @@ document.addEventListener('DOMContentLoaded', function domLoaded() {
 			util.eraseCookie('auth_token');
 		});
 	}
-	let btnProfile = document.getElementById('btn-profile');
-	if (btnProfile) {
-		btnProfile.addEventListener('click', () => {
-			util.setCookie('active_tab_profile', 'profile', 1);
-		});
-	}
 	$(document).ready(function(){
 		$('[data-toggle="tooltip"]').tooltip();
 	});

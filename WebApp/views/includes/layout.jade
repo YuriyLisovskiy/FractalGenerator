@@ -21,11 +21,11 @@ html
 					block nav_buttons
 					if user.is_authenticated
 						li(class="nav-item")
-							a(class="nav-link", href="/profile" id="btn-profile" data-toggle="tooltip" title="Profile") #{user.username}&nbsp;
+							a(class="nav-link", href="/profile", id="btn-profile", data-toggle="tooltip", title="Profile") #{user.username}&nbsp;
 								i(class="fa fa-user-circle")
 					li(class="nav-item")
 						if !user.is_authenticated
-							a(class="nav-link", data-toggle="modal", data-target="#loginModal" href="#") Fractals
+							a(class="nav-link", data-toggle="modal", id="btn-fractals", data-target="#loginModal", href="#") Fractals
 						else
 							li(class="nav-item")
 								a(class="nav-link", href="/user/fractals") Fractals

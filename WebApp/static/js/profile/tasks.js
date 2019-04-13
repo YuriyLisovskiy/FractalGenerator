@@ -11,7 +11,7 @@ let createManageButton = (name, method, task_id, btn_id, success) => {
 	btn.addEventListener('click', function btnListener() {
 		util.sendAjax({
 			method: method,
-			url: '/api/administration/task',
+			url: '/api/user/task',
 			params: {
 				task_id: task_id
 			},
@@ -31,9 +31,6 @@ let createTaskRow = (item) => {
 
 	let title = document.createElement('th');
 	title.appendChild(pTitle);
-
-	let userName = document.createElement('th');
-	userName.appendChild(document.createTextNode('@' + item['owner_name']));
 
 	let pProgress = document.createElement('p');
 	pProgress.style.textOverflow = 'word-wrap';
@@ -71,31 +68,30 @@ let createTaskRow = (item) => {
 	let intervalId = setInterval(function() {
 		util.sendAjax({
 			method: 'GET',
-			url: '/api/administration/task',
+			url: '/api/user/task',
 			params: {
 				task_id: item['id']
 			},
 			success: (data) => {
 				if (data['task_status'] === 'Finished') {
 					clearInterval(intervalId);
-				} else {
-					let prs = document.getElementById('progress_' + item['id']);
-					let sts = document.getElementById('status_' + item['id']);
-					prs.innerText = data['task_progress'] + '%';
-					sts.innerText = data['task_status'].toString();
-					switch (data['task_status']) {
-						case 'Not Started':
-							break;
-						case 'Running':
-							sts.style.backgroundColor = 'lightgreen';
-							break;
-						case 'Finished':
-							sts.style.backgroundColor = 'lightgray';
-							break;
-						case 'In Queue':
-							sts.style.backgroundColor = 'yellow';
-							break;
-					}
+				}
+				let prs = document.getElementById('progress_' + item['id']);
+				let sts = document.getElementById('status_' + item['id']);
+				prs.innerText = data['task_progress'] + '%';
+				sts.innerText = data['task_status'].toString();
+				switch (data['task_status']) {
+					case 'Not Started':
+						break;
+					case 'Running':
+						sts.style.backgroundColor = 'lightgreen';
+						break;
+					case 'Finished':
+						sts.style.backgroundColor = 'lightgray';
+						break;
+					case 'In Queue':
+						sts.style.backgroundColor = 'yellow';
+						break;
 				}
 			},
 			error: (data) => {
@@ -108,13 +104,13 @@ let createTaskRow = (item) => {
 		currRow.parentNode.removeChild(currRow);
 		clearInterval(intervalId);
 	});
-	
+
 	switch (item['status']) {
 		case 'Not Started':
-			btnStop.disabled = true;
+			btnStop.setAttribute('disabled', 'true');
 			break;
 		case 'Running':
-			btnStart.disabled = true;
+			btnStart.setAttribute('disabled', 'true');
 			break;
 	}
 
@@ -143,25 +139,11 @@ let createTaskRow = (item) => {
 	let manage = document.createElement('th');
 	manage.appendChild(manageBtnGroup);
 
-	let idTh = document.createElement('th');
-	idTh.appendChild(document.createTextNode(item['id']));
-
-	let pServer = document.createElement('p');
-	pServer.style.textOverflow = 'word-wrap';
-	pServer.style.width = '100%';
-	pServer.appendChild(document.createTextNode(item['server_host'] + ':' + item['server_port']));
-
-	let server = document.createElement('th');
-	server.appendChild(pServer);
-
 	let tr = document.createElement('tr');
 	tr.setAttribute('id', 'task_row_' + item['id']);
-	tr.appendChild(idTh);
 	tr.appendChild(title);
-	tr.appendChild(userName);
 	tr.appendChild(status);
 	tr.appendChild(progress);
-	tr.appendChild(server);
 	let fractal = document.createElement('th');
 	if (item['fractal_link'] !== null) {
 		let fLink = document.createElement('a');
@@ -187,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function domLoadedListener() {
 	let showMoreTasksTab = document.getElementById('show-more-tasks-tab');
 	showMoreTasksTab.addEventListener('click', function showMoreTasksListener() {
 		util.loadPage(
-			'api/administration/tasks',
+			'api/user/tasks',
 			10,
 			page,
 			document.getElementById('tasks-tbody'),

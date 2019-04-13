@@ -51,6 +51,57 @@ class Db {
             fractal  INTEGER      NULL REFERENCES Fractals (id) ON DELETE CASCADE,
             queue_id INTEGER      NOT NULL REFERENCES ServerQueue (id) ON DELETE CASCADE
           );
+
+          CREATE OR REPLACE FUNCTION GetTaskAdminFunction(task_id INTEGER)
+            RETURNS TABLE (id INTEGER, title VARCHAR(512), username VARCHAR(100), progress INTEGER, status VARCHAR(11), fractal_link VARCHAR(1024), server_host VARCHAR(1024), server_port INTEGER) AS $$
+          BEGIN
+            RETURN QUERY (
+              SELECT Tasks.id, Tasks.title, Users.username, Tasks.progress, Tasks.status, Fractals.url_path, ServerQueue.server_host, ServerQueue.server_port
+              FROM Tasks
+                     JOIN Users ON Tasks.owner = Users.id
+                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
+              WHERE Tasks.id = task_id
+            );
+          END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE VIEW GetAllTasksAdminView AS
+          SELECT Tasks.id, Tasks.title, Users.username, Tasks.progress, Tasks.status, Fractals.url_path as fractal_link, ServerQueue.server_host, ServerQueue.server_port
+          FROM Tasks
+                 JOIN Users ON Tasks.owner = Users.id
+                 JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                 LEFT JOIN Fractals ON Tasks.fractal = Fractals.id;
+
+          CREATE OR REPLACE FUNCTION GetUserTasksFunction(user_id INTEGER)
+            RETURNS TABLE (id INTEGER, title VARCHAR(512), progress INTEGER, status VARCHAR(11), fractal_link VARCHAR(1024)) AS
+          $$
+          BEGIN
+            RETURN QUERY (
+              SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path
+              FROM Tasks
+                     JOIN Users ON Tasks.owner = Users.id
+                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
+              WHERE Users.id = user_id
+            );
+          END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION GetUserTaskFunction(user_id INTEGER, task_id INTEGER)
+            RETURNS TABLE (id INTEGER, title VARCHAR(512), progress INTEGER, status VARCHAR(11), fractal_link VARCHAR(1024)) AS
+          $$
+          BEGIN
+            RETURN QUERY (
+              SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path
+              FROM Tasks
+                     JOIN Users ON Tasks.owner = Users.id
+                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
+              WHERE Users.id = user_id AND Tasks.id = task_id
+            );
+          END;
+          $$ LANGUAGE plpgsql;
 		`);
 	}
 
@@ -128,51 +179,39 @@ class Db {
 	}
 
 	getTask(task_id, success, failed) {
-		success({
-			id: task_id,
-			title: 'Mandelbrot Set',
-			owner_name: 'YuriyLisovskiy',
-			progress: 67,
-			status: 'In Queue',
-			fractal_link: null,
-			server_host: 'localhost',
-			server_port: 8000
-		});
+		this.getItem(
+			'SELECT * FROM GetTaskAdminFunction(($1));',
+			[task_id],
+			(task) => success(task),
+			(err) => failed(err)
+		);
 	}
 
 	getAllTasks(success, failed) {
-		success([
-			{
-				id: 1,
-				title: 'Mandelbrot Set',
-				owner_name: 'YuriyLisovskiy',
-				progress: 35,
-				status: 'Running',
-				fractal_link: null,
-				server_host: 'localhost',
-				server_port: 8000
-			},
-			{
-				id: 2,
-				title: 'Mandelbrot Set',
-				owner_name: 'admin',
-				progress: 100,
-				status: 'Finished',
-				fractal_link: '/media/mandelbrot-set-54312451672.jpg',
-				server_host: 'localhost',
-				server_port: 8001
-			},
-			{
-				id: 3,
-				title: 'Julia Set',
-				owner_name: 'admin',
-				progress: 0,
-				status: 'Not started',
-				fractal_link: null,
-				server_host: 'localhost',
-				server_port: 8000
-			}
-		])
+		this.getList(
+			'SELECT * FROM GetAllTasksAdminView;',
+			[],
+			(tasks) => success(tasks),
+			(err) => failed(err)
+		);
+	}
+
+	getUserTasks(user_id, success, failed) {
+		this.getList(
+			'SELECT * FROM GetUserTasksFunction(($1));',
+			[user_id],
+			(tasks) => success(tasks),
+			(err) => failed(err)
+		);
+	}
+
+	getUserTask(user_id, task_id, success, failed) {
+		this.getItem(
+			'SELECT * FROM GetUserTaskFunction(($1), ($2));',
+			[user_id, task_id],
+			(task) => success(task),
+			(err) => failed(err)
+		);
 	}
 }
 
