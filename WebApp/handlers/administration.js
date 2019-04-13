@@ -44,27 +44,85 @@ module.exports = {
 			get: (request, response) => {
 				db.getTask(request.query.task_id,
 					(task) => {
+						let tServer = '-';
+						if (task.server_host !== null && task.server_port !== null) {
+							tServer = task.server_host + ':' + task.server_port;
+						}
 						util.SendSuccessResponse(response, 200, {
 							task_progress: task.progress,
-							task_status: task.status
+							task_status: task.status,
+							task_server: tServer
 						});
 					},
 					(err) => {
-						util.SendInternalServerError(response, err.detail);
+						util.SendInternalServerError(response);
+						console.log('[ERROR] administration.AdministrationTask, get, getTask: ' + err.detail);
 					}
 				);
 			},
 			post: (request, response) => {
-				// TODO: start task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to start task, if success:
+				db.getTask(request.body.task_id,
+					(task) => {
+						if (task['status'] === 'Not Started') {
+							db.updateTask(task['id'], 0, 'In Queue',
+								(updTask) => {
+									util.SendSuccessResponse(response, 200, updTask);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] administration.AdministrationTask, post, updateTask: ' + err.detail);
+								}
+							);
+						}
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] administration.AdministrationTask, post, getTask: ' + err.detail);
+					}
+				);
 			},
 			put: (request, response) => {
-				// TODO: stop task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to stop task, if success:
+				db.getTask(request.body.task_id,
+					(task) => {
+						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
+							db.updateTask(task['id'], 0, 'Not Started',
+								(updTask) => {
+									util.SendSuccessResponse(response, 200, updTask);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
+								}
+							);
+						}
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] administration.AdministrationTask, put, getTask: ' + err.detail);
+					}
+				);
 			},
 			delete_: (request, response) => {
-				// TODO: delete task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to delete task, if success:
+				db.getTask(request.body.task_id,
+					(task) => {
+						db.deleteTask(task['id'],
+							(updTask) => {
+								util.SendSuccessResponse(response, 200, updTask);
+							},
+							(err) => {
+								util.SendInternalServerError(response);
+								console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
+							}
+						);
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] administration.AdministrationTask, delete, getTask: ' + err.detail);
+					}
+				);
 			}
 		});
 	}

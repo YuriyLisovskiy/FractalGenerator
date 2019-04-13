@@ -48,8 +48,6 @@ let createTaskRow = (item) => {
 	status.setAttribute('id', 'status_' + item['id']);
 	status.appendChild(document.createTextNode(item['status']));
 	switch (item['status']) {
-		case 'Not Started':
-			break;
 		case 'Running':
 			status.style.backgroundColor = 'lightgreen';
 			break;
@@ -58,6 +56,9 @@ let createTaskRow = (item) => {
 			break;
 		case 'In Queue':
 			status.style.backgroundColor = 'yellow';
+			break;
+		default:
+			status.style.backgroundColor = 'transparent';
 			break;
 	}
 	let btnStart = createManageButton('Start', 'POST', item['id'], 'start_' + item['id'], () => {
@@ -81,11 +82,11 @@ let createTaskRow = (item) => {
 				} else {
 					let prs = document.getElementById('progress_' + item['id']);
 					let sts = document.getElementById('status_' + item['id']);
+					let srv = document.getElementById('task_server_' + item['id']);
 					prs.innerText = data['task_progress'] + '%';
 					sts.innerText = data['task_status'].toString();
+					srv.innerText = data['task_server'].toString();
 					switch (data['task_status']) {
-						case 'Not Started':
-							break;
 						case 'Running':
 							sts.style.backgroundColor = 'lightgreen';
 							break;
@@ -94,6 +95,9 @@ let createTaskRow = (item) => {
 							break;
 						case 'In Queue':
 							sts.style.backgroundColor = 'yellow';
+							break;
+						default:
+							sts.style.backgroundColor = 'transparent';
 							break;
 					}
 				}
@@ -150,7 +154,12 @@ let createTaskRow = (item) => {
 	let pServer = document.createElement('p');
 	pServer.style.textOverflow = 'word-wrap';
 	pServer.style.width = '100%';
-	pServer.appendChild(document.createTextNode(item['server_host'] + ':' + item['server_port']));
+	pServer.setAttribute('id', 'task_server_' + item['id']);
+	if (item['server_host'] === null || item['server_port'] === null) {
+		pServer.appendChild(document.createTextNode('-'));
+	} else {
+		pServer.appendChild(document.createTextNode(item['server_host'] + ':' + item['server_port']));
+	}
 
 	let server = document.createElement('th');
 	server.appendChild(pServer);

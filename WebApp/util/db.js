@@ -61,7 +61,7 @@ class Db {
               SELECT Tasks.id, Tasks.title, Users.username, Tasks.progress, Tasks.status, Fractals.url_path, ServerQueue.server_host, ServerQueue.server_port
               FROM Tasks
                      JOIN Users ON Tasks.owner = Users.id
-                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
                      LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
               WHERE Tasks.id = task_id
             );
@@ -72,7 +72,7 @@ class Db {
           SELECT Tasks.id, Tasks.title, Users.username, Tasks.progress, Tasks.status, Fractals.url_path as fractal_link, ServerQueue.server_host, ServerQueue.server_port
           FROM Tasks
                  JOIN Users ON Tasks.owner = Users.id
-                 JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                 LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
                  LEFT JOIN Fractals ON Tasks.fractal = Fractals.id;
 
           CREATE OR REPLACE FUNCTION GetUserTasksFunction(user_id INTEGER)
@@ -83,7 +83,7 @@ class Db {
               SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path
               FROM Tasks
                      JOIN Users ON Tasks.owner = Users.id
-                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
                      LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
               WHERE Users.id = user_id
             );
@@ -98,7 +98,7 @@ class Db {
               SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path
               FROM Tasks
                      JOIN Users ON Tasks.owner = Users.id
-                     JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
+                     LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
                      LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
               WHERE Users.id = user_id AND Tasks.id = task_id
             );

@@ -88,16 +88,68 @@ module.exports = {
 				);
 			},
 			post: (request, response) => {
-				// TODO: start task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to start task, if success:
+				db.getUserTask(request.user.id, request.body.task_id,
+					(task) => {
+						if (task['status'] === 'Not Started') {
+							db.updateTask(task['id'], 0, 'In Queue',
+								(updTask) => {
+									util.SendSuccessResponse(response, 200, updTask);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] profile.UserTask, post, updateTask: ' + err.detail);
+								}
+							);
+						}
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserTask, post, getUserTask: ' + err.detail);
+					}
+				);
 			},
 			put: (request, response) => {
-				// TODO: stop task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to stop task, if success:
+				db.getUserTask(request.user.id, request.body.task_id,
+					(task) => {
+						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
+							db.updateTask(task['id'], 0, 'Not Started',
+								(updTask) => {
+									util.SendSuccessResponse(response, 200, updTask);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] profile.UserTask, put, updateTask: ' + err.detail);
+								}
+							);
+						}
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserTask, put, getUserTask: ' + err.detail);
+					}
+				);
 			},
 			delete_: (request, response) => {
-				// TODO: delete task
-				util.SendNotAcceptable(response);
+				// TODO: send remote server to delete task, if success:
+				db.getUserTask(request.user.id, request.body.task_id,
+					(task) => {
+						db.deleteTask(task['id'],
+							(updTask) => {
+								util.SendSuccessResponse(response, 200, updTask);
+							},
+							(err) => {
+								util.SendInternalServerError(response);
+								console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
+							}
+						);
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserTask, delete, getUserTask: ' + err.detail);
+					}
+				);
 			}
 		});
 	}

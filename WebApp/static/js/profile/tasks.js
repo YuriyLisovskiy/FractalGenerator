@@ -45,8 +45,6 @@ let createTaskRow = (item) => {
 	status.setAttribute('id', 'status_' + item['id']);
 	status.appendChild(document.createTextNode(item['status']));
 	switch (item['status']) {
-		case 'Not Started':
-			break;
 		case 'Running':
 			status.style.backgroundColor = 'lightgreen';
 			break;
@@ -55,6 +53,9 @@ let createTaskRow = (item) => {
 			break;
 		case 'In Queue':
 			status.style.backgroundColor = 'yellow';
+			break;
+		default:
+			status.style.backgroundColor = 'transparent';
 			break;
 	}
 	let btnStart = createManageButton('Start', 'POST', item['id'], 'start_' + item['id'], () => {
@@ -81,8 +82,6 @@ let createTaskRow = (item) => {
 				prs.innerText = data['task_progress'] + '%';
 				sts.innerText = data['task_status'].toString();
 				switch (data['task_status']) {
-					case 'Not Started':
-						break;
 					case 'Running':
 						sts.style.backgroundColor = 'lightgreen';
 						break;
@@ -91,6 +90,9 @@ let createTaskRow = (item) => {
 						break;
 					case 'In Queue':
 						sts.style.backgroundColor = 'yellow';
+						break;
+					default:
+						sts.style.backgroundColor = 'transparent';
 						break;
 				}
 			},
