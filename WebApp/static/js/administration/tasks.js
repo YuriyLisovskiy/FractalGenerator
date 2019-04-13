@@ -113,6 +113,7 @@ let createTaskRow = (item) => {
 		case 'Not Started':
 			btnStop.disabled = true;
 			break;
+		case 'In Queue':
 		case 'Running':
 			btnStart.disabled = true;
 			break;

@@ -37,19 +37,21 @@ class Db {
           CREATE TABLE IF NOT EXISTS ServerQueue
           (
             id SERIAL PRIMARY KEY,
-            server_host VARCHAR(1024),
-            server_port	INTEGER
+            server_host VARCHAR(1024) NOT NULL,
+            server_port	INTEGER NOT NULL,
+            tasks_count INTEGER DEFAULT 0
           );
 
           CREATE TABLE IF NOT EXISTS Tasks
           (
-            id       SERIAL PRIMARY KEY,
-            title    VARCHAR(512) NOT NULL,
-            owner    INTEGER      NOT NULL REFERENCES Users (id) ON DELETE CASCADE,
-            progress INTEGER      NOT NULL DEFAULT 0 CHECK ( progress >= 0 AND progress <= 100 ),
-            status   VARCHAR(11)  NOT NULL DEFAULT 'Not Started' CHECK ( status = 'Running' OR status = 'Not Started' OR status = 'Finished' OR status = 'In Queue'),
-            fractal  INTEGER      NULL REFERENCES Fractals (id) ON DELETE CASCADE,
-            queue_id INTEGER      NOT NULL REFERENCES ServerQueue (id) ON DELETE CASCADE
+            id       	SERIAL PRIMARY KEY,
+            title    	VARCHAR(512) NOT NULL,
+            owner    	INTEGER      NOT NULL REFERENCES Users (id) ON DELETE CASCADE,
+            progress 	INTEGER      NOT NULL DEFAULT 0 CHECK ( progress >= 0 AND progress <= 100 ),
+            status   	VARCHAR(11)  NOT NULL DEFAULT 'In Queue' CHECK ( status = 'Running' OR status = 'Not Started' OR status = 'Finished' OR status = 'In Queue'),
+            fractal  	INTEGER      NULL REFERENCES Fractals (id) ON DELETE CASCADE,
+            queue_id 	INTEGER      NULL REFERENCES ServerQueue (id) ON DELETE CASCADE,
+            task_type   INTEGER      NOT NULL
           );
 
           CREATE OR REPLACE FUNCTION GetTaskAdminFunction(task_id INTEGER)
@@ -101,6 +103,58 @@ class Db {
               WHERE Users.id = user_id AND Tasks.id = task_id
             );
           END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION CreateTask(t_title VARCHAR(512), t_type INTEGER, t_owner INTEGER)
+            RETURNS VOID AS
+          $$
+          DECLARE
+            queue RECORD;
+          BEGIN
+            SELECT ServerQueue.id
+            FROM ServerQueue
+            ORDER BY ServerQueue.tasks_count, ServerQueue.id ASC
+            LIMIT 1 INTO queue;
+            INSERT INTO Tasks(title, owner, queue_id, task_type)
+            VALUES (t_title, t_owner, queue.id, t_type);
+            UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue.id;
+          END
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION UpdateTask(task_id INTEGER, task_progress INTEGER, task_status VARCHAR(11))
+            RETURNS VOID AS
+          $$
+          DECLARE
+            task RECORD;
+            queue RECORD;
+          BEGIN
+            SELECT * FROM Tasks WHERE Tasks.id = task_id INTO task;
+            IF (task_status = 'Not Started' OR task_status = 'Finished') AND task.status <> task_status THEN
+              UPDATE ServerQueue SET tasks_count = tasks_count - 1 WHERE id = task.queue_id;
+              UPDATE Tasks SET queue_id = NULL, status = task_status, progress = task_progress WHERE id = task_id;
+            ELSEIF (task_status = 'In Queue' AND task.status = 'Not Started') THEN
+              SELECT ServerQueue.id
+              FROM ServerQueue
+              ORDER BY ServerQueue.tasks_count, ServerQueue.id ASC
+              LIMIT 1 INTO queue;
+              UPDATE Tasks SET queue_id = queue.id, status = task_status, progress = task_progress WHERE id = task_id;
+              UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue.id;
+            END IF;
+          END
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION DeleteTask(task_id INTEGER)
+            RETURNS VOID AS
+          $$
+          DECLARE
+            task RECORD;
+          BEGIN
+            SELECT * FROM Tasks WHERE Tasks.id = task_id INTO task;
+            IF task.queue_id IS NOT NULL THEN
+              UPDATE ServerQueue SET tasks_count = tasks_count - 1 WHERE id = task.queue_id;
+            END IF;
+            DELETE FROM Tasks WHERE Tasks.id = task_id;
+          END
           $$ LANGUAGE plpgsql;
 		`);
 	}
@@ -179,39 +233,31 @@ class Db {
 	}
 
 	getTask(task_id, success, failed) {
-		this.getItem(
-			'SELECT * FROM GetTaskAdminFunction(($1));',
-			[task_id],
-			(task) => success(task),
-			(err) => failed(err)
-		);
+		this.getItem('SELECT * FROM GetTaskAdminFunction(($1));', [task_id], success, failed);
 	}
 
 	getAllTasks(success, failed) {
-		this.getList(
-			'SELECT * FROM GetAllTasksAdminView;',
-			[],
-			(tasks) => success(tasks),
-			(err) => failed(err)
-		);
+		this.getList('SELECT * FROM GetAllTasksAdminView;', [], success, failed);
 	}
 
 	getUserTasks(user_id, success, failed) {
-		this.getList(
-			'SELECT * FROM GetUserTasksFunction(($1));',
-			[user_id],
-			(tasks) => success(tasks),
-			(err) => failed(err)
-		);
+		this.getList('SELECT * FROM GetUserTasksFunction(($1));', [user_id], success, failed);
 	}
 
 	getUserTask(user_id, task_id, success, failed) {
-		this.getItem(
-			'SELECT * FROM GetUserTaskFunction(($1), ($2));',
-			[user_id, task_id],
-			(task) => success(task),
-			(err) => failed(err)
-		);
+		this.getItem('SELECT * FROM GetUserTaskFunction(($1), ($2));', [user_id, task_id], success, failed);
+	}
+
+	createTask(title, type, owner_id, success, failed) {
+		this.runQuery('SELECT CreateTask(($1), ($2), ($3));', [title, type, owner_id], success, failed);
+	}
+
+	updateTask(task_id, progress, status, success, failed) {
+		this.runQuery('SELECT UpdateTask(($1), ($2), ($3));', [task_id, progress, status], success, failed);
+	}
+
+	deleteTask(task_id, success, failed) {
+		this.runQuery('SELECT DeleteTask(($1));', [task_id], success, failed);
 	}
 }
 

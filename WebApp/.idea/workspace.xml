@@ -2,16 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="33a33a3e-dbc3-40b3-9e69-6aa3f5a358eb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/handlers/profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/profile.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/profile.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/profile.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/js/administration/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/administration/tasks.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/layout.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/layout.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/profile/profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/profile/profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/profile/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/profile/tasks.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/db.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/db.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/includes/layout.jade" beforeDir="false" afterPath="$PROJECT_DIR$/views/includes/layout.jade" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/index.jade" beforeDir="false" afterPath="$PROJECT_DIR$/views/index.jade" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/profile.jade" beforeDir="false" afterPath="$PROJECT_DIR$/views/profile.jade" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -61,11 +54,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/util/db.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="647">
-              <caret line="220" lean-forward="true" selection-start-line="220" selection-end-line="220" />
+            <state relative-caret-position="306">
+              <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" />
               <folding>
                 <element signature="n#!!block;n#constructor#0;n#Db#0" />
                 <element signature="n#!!block;n#isConnected#0;n#Db#0" />
@@ -79,7 +72,27 @@
                 <element signature="n#!!block;n#getAllTasks#0;n#Db#0" />
                 <element signature="n#!!block;n#getUserTasks#0;n#Db#0" />
                 <element signature="n#!!block;n#getUserTask#0;n#Db#0" />
+                <element signature="n#!!block;n#createTask#0;n#Db#0" />
+                <element signature="n#!!block;n#updateTask#0;n#Db#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="593">
+              <caret line="118" column="18" lean-forward="true" selection-start-line="118" selection-start-column="18" selection-end-line="118" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="434">
+              <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
             </state>
           </provider>
         </entry>
@@ -116,11 +129,11 @@
         <option value="$PROJECT_DIR$/views/includes/layout.jade" />
         <option value="$PROJECT_DIR$/static/js/layout.js" />
         <option value="$PROJECT_DIR$/static/js/profile/profile.js" />
-        <option value="$PROJECT_DIR$/static/js/profile/tasks.js" />
-        <option value="$PROJECT_DIR$/static/js/administration/tasks.js" />
         <option value="$PROJECT_DIR$/views/profile.jade" />
         <option value="$PROJECT_DIR$/views/index.jade" />
         <option value="$PROJECT_DIR$/util/db.js" />
+        <option value="$PROJECT_DIR$/static/js/administration/tasks.js" />
+        <option value="$PROJECT_DIR$/static/js/profile/tasks.js" />
       </list>
     </option>
   </component>
@@ -230,18 +243,18 @@
       <option name="presentableId" value="Default" />
       <updated>1554973418874</updated>
       <workItem from="1554973422348" duration="418000" />
-      <workItem from="1555158630900" duration="27653000" />
+      <workItem from="1555158630900" duration="35590000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="28071000" />
+    <option name="totallyTimeSpent" value="36008000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19701162" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19701162" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="npm" order="2" side_tool="true" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -255,8 +268,8 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.42872807" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5002767" side_tool="true" weight="0.42872807" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4997233" weight="0.42872807" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -425,29 +438,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="124">
-          <caret line="4" column="31" selection-start-line="4" selection-start-column="31" selection-end-line="4" selection-end-column="31" />
-          <folding>
-            <element signature="e#116#561#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="279">
-          <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
-          <folding>
-            <element signature="e#116#581#0" />
-            <element signature="e#614#5412#0" />
-            <element signature="e#2142#3012#0" />
-            <element signature="e#5490#6012#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/handlers/profile.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="341">
@@ -508,8 +498,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/util/db.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="647">
-          <caret line="220" lean-forward="true" selection-start-line="220" selection-end-line="220" />
+        <state relative-caret-position="306">
+          <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" />
           <folding>
             <element signature="n#!!block;n#constructor#0;n#Db#0" />
             <element signature="n#!!block;n#isConnected#0;n#Db#0" />
@@ -523,7 +513,23 @@
             <element signature="n#!!block;n#getAllTasks#0;n#Db#0" />
             <element signature="n#!!block;n#getUserTasks#0;n#Db#0" />
             <element signature="n#!!block;n#getUserTask#0;n#Db#0" />
+            <element signature="n#!!block;n#createTask#0;n#Db#0" />
+            <element signature="n#!!block;n#updateTask#0;n#Db#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="593">
+          <caret line="118" column="18" lean-forward="true" selection-start-line="118" selection-start-column="18" selection-end-line="118" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="434">
+          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
         </state>
       </provider>
     </entry>
