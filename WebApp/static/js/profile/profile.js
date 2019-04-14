@@ -29,5 +29,24 @@ document.addEventListener('DOMContentLoaded', function domLoadedListener() {
 		util.setCookie('active_tab_profile', 'tasks', 1);
 	});
 
+	document.getElementById('save-profile').addEventListener('click', function (e) {
+		e.preventDefault();
+		util.sendAjax({
+			method: 'POST',
+			url: '/api/profile/edit',
+			params: {
+				username: document.getElementById('username').value,
+				email: document.getElementById('email').value
+			},
+			success: (data) => {
+				util.setCookie('auth_token', data['key'], 1);
+				document.location.href = data['redirect_url'];
+			},
+			error: (err) => {
+				alert(err.detail);
+			}
+		})
+	});
+
 	document.removeEventListener('DOMContentLoaded', domLoadedListener);
 });

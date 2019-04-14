@@ -12,6 +12,5 @@ router.get('/user/verify/(([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+))',
 router.get('/user/fractals', ProfileViews.UserFractals);
 
 router.post('/register', AuthViews.Register);
-router.post('/profile', ProfileViews.Profile);
 
 module.exports = router;

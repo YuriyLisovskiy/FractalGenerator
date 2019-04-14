@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const util = require('../util/util');
 const settings = require('../util/settings');
 
@@ -21,7 +22,21 @@ module.exports = {
 							user.email = data.email;
 							db.updateUser(user,
 								() => {
-									response.redirect('/profile');
+									jwt.sign(user, settings.SecretKey, { expiresIn: '1h' }, (err, token) => {
+										if (err) {
+											console.log(err);
+											util.SendBadRequest(response);
+										} else {
+											util.SendSuccessResponse(response, 201, {
+												key: token,
+												user: {
+													username: user.username,
+													is_superuser: user.is_superuser
+												},
+												redirect_url: '/profile'
+											});
+										}
+									});
 								},
 								(err) => {
 									console.log('[ERROR] profile.Profile, post, updateUser: ' + err.detail);
