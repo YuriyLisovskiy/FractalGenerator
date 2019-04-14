@@ -32,9 +32,12 @@ let transporterData = {
 	}
 };
 
+let UserTasksLimit = 5;
+
 module.exports = {
 	SecretKey: secret,
 	Db: db,
 	transporterData: transporterData,
-	host: host
+	host: host,
+	UserTasksLimit: UserTasksLimit
 };

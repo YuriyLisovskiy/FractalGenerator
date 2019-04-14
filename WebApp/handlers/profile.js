@@ -58,8 +58,34 @@ module.exports = {
 			request: request,
 			response: response,
 			get: (request, response) => {
-				// TODO: get user tasks
-				util.SendNotAcceptable(response);
+				db.getUserFractals(request.user.id,
+					(data) => {
+						util.Render(request, response, 'fractal_gallery', {
+							has_fractals: data.length > 0
+						});
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserFractals, get, getUserFractals: ' + err.detail);
+					}
+				);
+			},
+			put: (request, response) => {
+				db.getUserFractals(request.user.id,
+					(data) => {
+						let limit = request.body.limit;
+						let page = request.body.page;
+						util.SendSuccessResponse(response, 200, {
+							threshold: data.length > limit ? data.length - 2 : -1,
+							fractals: data.slice(limit * (page - 1), limit * page),
+							pages: Math.ceil(data.length / limit),
+						});
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserFractals, put, getUserFractals: ' + err.detail);
+					}
+				);
 			}
 		});
 	},
@@ -98,7 +124,8 @@ module.exports = {
 						});
 					},
 					(err) => {
-						util.SendInternalServerError(response, err.detail);
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.UserTask, get, getUserTask: ' + err.detail);
 					}
 				);
 			},
@@ -163,6 +190,25 @@ module.exports = {
 					(err) => {
 						util.SendInternalServerError(response);
 						console.log('[ERROR] profile.UserTask, delete, getUserTask: ' + err.detail);
+					}
+				);
+			}
+		});
+	},
+	CreateTask: function (request, response) {
+		util.HandleAuthRequest({
+			request: request,
+			response: response,
+			get: (request, response) => {
+				db.countUserActiveTasks(request.user.id,
+					(data) => {
+						util.Render(request, response, 'create_task', {
+							block_task_creation: data['countuseractivetasks'] > settings.UserTasksLimit
+						});
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.CreateTask, get, countUserActiveTasks: ' + err.detail);
 					}
 				);
 			}

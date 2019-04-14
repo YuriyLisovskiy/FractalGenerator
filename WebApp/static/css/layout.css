@@ -1,3 +1,9 @@
+.page-title {
+	text-align: center;
+	alignment: center;
+	margin-top: 10px;
+}
+
 #btn-cart {
 	margin-right: 10px;
 }

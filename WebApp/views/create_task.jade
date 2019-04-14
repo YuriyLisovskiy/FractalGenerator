@@ -1,0 +1,16 @@
+extends includes/layout
+
+block title
+    title Fractals Generator | Generate Fractal
+
+block body
+    div(class="container")
+        br
+        if block_task_creation
+            h4(class="page-title") Sorry, you can not generate more then 5 fractals simultaneously
+        else
+            form(method="post")
+                div(class="form-group row")
+                    label(for="username", class="col-sm-12") Title:
+                        input(type="text", name="title", class="form-control", id="title", placeholder="Type text...", required)
+                button(type="submit", id="save-profile", class="btn btn-success") Generate

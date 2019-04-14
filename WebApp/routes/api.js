@@ -17,6 +17,7 @@ router.post('/token/verify', AuthViews.VerifyToken);
 router.post('/administration/task', AdministrationViews.AdministrationTask);
 
 router.put('/user/task', ProfileViews.UserTask);
+router.put('/user/fractals', ProfileViews.UserFractals);
 router.put('/administration/task', AdministrationViews.AdministrationTask);
 
 router.delete('/user/task', ProfileViews.UserTask);

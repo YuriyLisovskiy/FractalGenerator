@@ -30,6 +30,7 @@ class Db {
           CREATE TABLE IF NOT EXISTS Fractals
           (
             id       SERIAL PRIMARY KEY,
+            title    VARCHAR(200)  NOT NULL,
             url_path VARCHAR(1024) NOT NULL,
             owner    INTEGER       NOT NULL REFERENCES Users (id) ON DELETE CASCADE
           );
@@ -156,6 +157,32 @@ class Db {
             DELETE FROM Tasks WHERE Tasks.id = task_id;
           END
           $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION GetUserFractals(user_id INTEGER)
+            RETURNS TABLE (id INTEGER, title VARCHAR(200), url_path VARCHAR(1024)) AS
+          $$
+          BEGIN
+            RETURN QUERY (
+              SELECT Fractals.id, Fractals.title, Fractals.url_path
+              FROM Fractals
+              WHERE Fractals.owner = user_id
+            );
+          END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION CountUserActiveTasks(user_id INTEGER)
+            RETURNS INTEGER AS
+          $$
+          DECLARE
+            temp RECORD;
+          BEGIN
+            SELECT count(*) as amount
+            FROM Tasks
+            WHERE Tasks.owner = user_id AND Tasks.queue_id IS NOT NULL
+              INTO temp;
+            RETURN temp.amount;
+          END
+          $$ LANGUAGE plpgsql;
 		`);
 	}
 
@@ -258,6 +285,19 @@ class Db {
 
 	deleteTask(task_id, success, failed) {
 		this.runQuery('SELECT DeleteTask(($1));', [task_id], success, failed);
+	}
+
+	getUserFractals(user_id, success, failed) {
+		this.getList('SELECT * FROM GetUserFractals(($1));', [user_id], success, failed);
+	}
+
+	countUserActiveTasks(user_id, success, failed) {
+		this.getItem(
+			'SELECT * FROM CountUserActiveTasks(($1));',
+			[user_id],
+			success,
+			failed
+		);
 	}
 }
 
