@@ -106,19 +106,13 @@ class Db {
           END;
           $$ LANGUAGE plpgsql;
 
-          CREATE OR REPLACE FUNCTION CreateTask(t_title VARCHAR(512), t_type INTEGER, t_owner INTEGER)
+          CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_owner INTEGER)
             RETURNS VOID AS
           $$
-          DECLARE
-            queue RECORD;
           BEGIN
-            SELECT ServerQueue.id
-            FROM ServerQueue
-            ORDER BY ServerQueue.tasks_count, ServerQueue.id ASC
-            LIMIT 1 INTO queue;
             INSERT INTO Tasks(title, owner, queue_id, task_type)
-            VALUES (t_title, t_owner, queue.id, t_type);
-            UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue.id;
+            VALUES (t_title, t_owner, queue_id, t_type);
+            UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue_id;
           END
           $$ LANGUAGE plpgsql;
 
@@ -182,6 +176,53 @@ class Db {
               INTO temp;
             RETURN temp.amount;
           END
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION CreateServerQueue(host VARCHAR(1024), port INTEGER)
+            RETURNS VOID AS
+          $$
+          DECLARE tmp RECORD;
+          BEGIN
+            tmp := NULL;
+            SELECT ServerQueue.server_host, ServerQueue.server_port
+            FROM ServerQueue
+            WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port INTO tmp;
+            IF tmp.server_host <> host OR tmp.server_port <> port THEN
+              INSERT INTO ServerQueue(server_host, server_port) VALUES (host, port);
+            END IF;
+          END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION DeleteServerQueue(host VARCHAR(1024), port INTEGER)
+            RETURNS VOID AS
+          $$
+          DECLARE tmp RECORD;
+          BEGIN
+            tmp := NULL;
+            SELECT ServerQueue.server_host, ServerQueue.server_port
+            FROM ServerQueue
+            WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port INTO tmp;
+            IF tmp IS NOT NULL THEN
+              DELETE FROM ServerQueue
+              WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port;
+            END IF;
+          END;
+          $$ LANGUAGE plpgsql;
+
+          CREATE OR REPLACE FUNCTION GetAvailableServer()
+            RETURNS TABLE (id INTEGER, server_host VARCHAR(1024), server_port INTEGER, tasks_count INTEGER, servers_amount INTEGER) AS
+          $$
+          DECLARE
+            servers_count INTEGER;
+          BEGIN
+            servers_count := (SELECT count(*) FROM ServerQueue);
+            RETURN QUERY (
+              SELECT ServerQueue.id, ServerQueue.server_host, ServerQueue.server_port, ServerQueue.tasks_count, servers_count
+              FROM ServerQueue
+              ORDER BY ServerQueue.tasks_count, ServerQueue.id ASC
+              LIMIT 1
+            );
+          END;
           $$ LANGUAGE plpgsql;
 		`);
 	}
@@ -275,7 +316,7 @@ class Db {
 		this.getItem('SELECT * FROM GetUserTaskFunction(($1), ($2));', [user_id, task_id], success, failed);
 	}
 
-	createTask(title, type, owner_id, success, failed) {
+	createTask(queue_id, title, type, owner_id, success, failed) {
 		this.runQuery('SELECT CreateTask(($1), ($2), ($3));', [title, type, owner_id], success, failed);
 	}
 
