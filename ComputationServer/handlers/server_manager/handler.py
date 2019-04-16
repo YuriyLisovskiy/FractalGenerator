@@ -16,16 +16,18 @@ class ServerManagerHandler(BaseHTTPRequestHandler):
 		try:
 			if 'Content-Type' not in self.headers or 'application/json' not in self.headers['Content-Type'].lower():
 				self._send(400, '"application/json" content-type is required')
-			if 'Security-Key' not in self.headers:
-				self._send(403, 'security key is required')
-			if secure_key_is_valid(self.headers['Security-Key'], settings.HOST, str(settings.PORT)):
-				if self.path == '/get/server':
-					self.get_server()
-				else:
-					self._send(404, 'not found')
+		#	if 'Security-Key' not in self.headers:
+		#		self._send(403, 'security key is required')
+		#	if secure_key_is_valid(self.headers['Security-Key'], settings.HOST, str(settings.PORT)):
+			if self.path == '/get/server':
+				self.get_server()
 			else:
-				self._send(403, 'invalid security key')
+				self._send(404, 'not found')
+			# else:
+			# 	self._send(403, 'invalid security key')
 		except Exception as exc:
+			print(exc)
+			# raise exc
 			self._send(500, '{}'.format(exc))
 
 	def _send(self, status, content=None):
@@ -47,6 +49,6 @@ class ServerManagerHandler(BaseHTTPRequestHandler):
 		else:
 			start_server(settings.HOST, settings.NEXT_PORT)
 			server_info['host'] = settings.HOST
-			server_info['port'] = settings.PORT
+			server_info['port'] = settings.NEXT_PORT
 			settings.NEXT_PORT += 1
 		self._send(200, json.dumps(server_info))

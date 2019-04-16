@@ -187,7 +187,7 @@ class Db {
             SELECT ServerQueue.server_host, ServerQueue.server_port
             FROM ServerQueue
             WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port INTO tmp;
-            IF tmp.server_host <> host OR tmp.server_port <> port THEN
+            IF tmp IS NULL THEN
               INSERT INTO ServerQueue(server_host, server_port) VALUES (host, port);
             END IF;
           END;

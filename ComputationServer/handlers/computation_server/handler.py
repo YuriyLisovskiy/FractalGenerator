@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 
+from handlers.db import Db
 from server.server import ThreadedHttpServer
+from handlers.computation_server.utils import forked
 
 
 class ComputationServer:
@@ -8,16 +10,18 @@ class ComputationServer:
 	def __init__(self, host, port):
 		self._host = host
 		self._port = port
-		self._TERMINATE = False
 		self._http_server = ThreadedHttpServer((self._host, self._port), ComputationServerHandler)
-
-	def clean_up(self):
-		pass
+		self._db = Db()
 
 	def run(self):
+		self._db.create_server(self._host, self._port)
 		print('Started Computation Server at http://{}:{}'.format(self._host, self._port))
-		while not self._TERMINATE:
-			self._http_server.serve_forever()
+		self._serve()
+
+	@forked
+	def _serve(self):
+		self._http_server.serve_forever()
+		self._db.delete_server(self._host, self._port)
 
 
 class ComputationServerHandler(BaseHTTPRequestHandler):
