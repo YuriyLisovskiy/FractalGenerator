@@ -1,6 +1,7 @@
-package util
+package server
 
 import (
+	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 	"github.com/YuriyLisovskiy/jwt"
 	"net/http"
 	"strings"
@@ -33,10 +34,13 @@ func Request(fn func (writer http.ResponseWriter, request *http.Request), method
 func AuthRequest(fn func (writer http.ResponseWriter, request *http.Request), method string, params ...string) func (writer http.ResponseWriter, request *http.Request) {
 	return Request(
 		func (w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get("Security-Key")
-			jwtValidator := jwt.HmacSha256()
-			jwtValidator.Validate(token)
-			fn(w, r)
+			validator := jwt.HmacSha256(settings.SECRET)
+			err := validator.Validate(r.Header.Get("Security-Key"))
+			if err != nil {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+			} else {
+				fn(w, r)
+			}
 		},
 	method, params...)
 }
