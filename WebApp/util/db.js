@@ -179,35 +179,46 @@ class Db {
           $$ LANGUAGE plpgsql;
 
           CREATE OR REPLACE FUNCTION CreateServerQueue(host VARCHAR(1024), port INTEGER)
-            RETURNS VOID AS
-          $$
-          DECLARE tmp RECORD;
-          BEGIN
-            tmp := NULL;
-            SELECT ServerQueue.server_host, ServerQueue.server_port
-            FROM ServerQueue
-            WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port INTO tmp;
-            IF tmp IS NULL THEN
-              INSERT INTO ServerQueue(server_host, server_port) VALUES (host, port);
-            END IF;
-          END;
-          $$ LANGUAGE plpgsql;
+	  RETURNS TABLE (last_id INTEGER) AS
+	$$
+	DECLARE
+	  tmp RECORD;
+	BEGIN
+	  tmp := NULL;
+	  SELECT ServerQueue.server_host, ServerQueue.server_port
+	  FROM ServerQueue
+	  WHERE ServerQueue.server_host = host
+	    AND ServerQueue.server_port = port INTO tmp;
+	  IF tmp IS NULL THEN
+	    RETURN QUERY INSERT INTO ServerQueue(server_host, server_port) VALUES (host, port) RETURNING ServerQueue.id;
+	  ELSE
+	    RETURN QUERY SELECT -1;
+	  END IF;
+	END;
+	$$ LANGUAGE plpgsql;
 
-          CREATE OR REPLACE FUNCTION DeleteServerQueue(host VARCHAR(1024), port INTEGER)
-            RETURNS VOID AS
-          $$
-          DECLARE tmp RECORD;
-          BEGIN
-            tmp := NULL;
-            SELECT ServerQueue.server_host, ServerQueue.server_port
-            FROM ServerQueue
-            WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port INTO tmp;
-            IF tmp IS NOT NULL THEN
-              DELETE FROM ServerQueue
-              WHERE ServerQueue.server_host = host AND ServerQueue.server_port = port;
-            END IF;
-          END;
-          $$ LANGUAGE plpgsql;
+	CREATE OR REPLACE FUNCTION DeleteServerQueue(host VARCHAR(1024), port INTEGER)
+	  RETURNS TABLE (last_id INTEGER) AS
+	$$
+	DECLARE
+	  tmp RECORD;
+	BEGIN
+	  tmp := NULL;
+	  SELECT ServerQueue.server_host, ServerQueue.server_port
+	  FROM ServerQueue
+	  WHERE ServerQueue.server_host = host
+	    AND ServerQueue.server_port = port INTO tmp;
+	  IF tmp IS NOT NULL THEN
+	    RETURN QUERY DELETE
+	    FROM ServerQueue
+	    WHERE ServerQueue.server_host = host
+	      AND ServerQueue.server_port = port
+	    RETURNING ServerQueue.id;
+	  ELSE
+	    RETURN QUERY SELECT -1;
+	  END IF;
+	END;
+	$$ LANGUAGE plpgsql;
 
           CREATE OR REPLACE FUNCTION GetAvailableServer()
             RETURNS TABLE (id INTEGER, server_host VARCHAR(1024), server_port INTEGER, tasks_count INTEGER, servers_amount INTEGER) AS
