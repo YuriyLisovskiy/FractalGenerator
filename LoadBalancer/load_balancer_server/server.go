@@ -1,4 +1,4 @@
-package manager_server
+package load_balancer_server
 
 import (
 	"fmt"
@@ -56,13 +56,14 @@ func (s *ServerManager) startComputationServer() (string, int, error) {
 		err = srv.ListenAndServe()
 		if err != nil {
 			fmt.Println(err)
+			s.NextPort--
 			return
 		}
 		err = computationServer.CleanUp()
 		if err != nil {
 			fmt.Println(err)
-			return
 		}
+		s.NextPort--
 	}(settings.HOST, s.NextPort)
 	s.NextPort++
 	return settings.HOST, s.NextPort - 1, nil

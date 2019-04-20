@@ -52,12 +52,25 @@ func (c *Client) CleanServerQueues() error {
 	return err
 }
 
-func (c *Client) CreateServerQueue(host string, port int) error {
-	_, err := c.db.Exec(SqlCreateServerQueue, host, port)
-	return err
+func (c *Client) CreateServerQueue(host string, port int) (int, error) {
+	var lastId int
+	err := c.db.QueryRow(SqlCreateServerQueue, host, port).Scan(&lastId)
+	if err != nil {
+		return -1, err
+	}
+	return lastId, nil
 }
 
 func (c *Client) DeleteServerQueue(host string, port int) error {
 	_, err := c.db.Exec(SqlDeleteServerQueue, host, port)
 	return err
+}
+
+func (c *Client) CreateTask(queueId int, taskTitle string, taskType int, ownerId int) (int, error) {
+	var lastId int
+	err := c.db.QueryRow(SqlCreateTask, queueId, taskTitle, taskType, ownerId).Scan(&lastId)
+	if err != nil {
+		return -1, err
+	}
+	return lastId, nil
 }

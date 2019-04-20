@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/YuriyLisovskiy/LoadBalancer/manager_server"
+	"github.com/YuriyLisovskiy/LoadBalancer/load_balancer_server"
 	"github.com/YuriyLisovskiy/LoadBalancer/server"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 )
 
 func main() {
-	c := manager_server.New()
+	c := load_balancer_server.New()
 	err := c.Initialize()
 	if err != nil {
 		panic(err)

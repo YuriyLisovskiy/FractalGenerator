@@ -1,47 +1,30 @@
 package computation_server
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/YuriyLisovskiy/LoadBalancer/db"
-	"github.com/YuriyLisovskiy/LoadBalancer/server"
 	"io"
 	"net/http"
 )
 
-type ComputationServer struct {
-	host     string
-	port     int
-	DbClient db.Client
+type taskData struct {
+	taskTitle string
+	taskType  int
+	ownerId   int
 }
 
-func New(host string, port int) ComputationServer {
-	return ComputationServer{
-		host:     host,
-		port:     port,
-		DbClient: db.New(),
-	}
-}
-
-func (s *ComputationServer) index(writer http.ResponseWriter, request *http.Request) {
-	_, err := io.WriteString(writer, fmt.Sprintf("It's Computation Server: %s:%d", s.host, s.port))
-	fmt.Println(request.URL.Query())
+func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.Request) {
+	decoder := json.NewDecoder(request.Body)
+	var data taskData
+	err := decoder.Decode(&data)
 	if err != nil {
-		panic(err)
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+	} else {
+		fmt.Println(s.DbClient.CreateTask(int(s.queueId), data.taskTitle, data.taskType, data.ownerId))
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+		} else {
+			_, _ = io.WriteString(writer, fmt.Sprintf("It's Computation Server: %s:%d", s.host, s.port))
+		}
 	}
-}
-
-func (s *ComputationServer) GetHandlers() *map[string]func(http.ResponseWriter, *http.Request) {
-	mux := make(map[string]func(http.ResponseWriter, *http.Request))
-
-	mux["/"] = server.Request(s.index, "GET")
-
-	return &mux
-}
-
-func (s *ComputationServer) CleanUp() error {
-	return s.DbClient.DeleteServerQueue(s.host, s.port)
-}
-
-func (s *ComputationServer) Initialize() error {
-	return s.DbClient.CreateServerQueue(s.host, s.port)
 }

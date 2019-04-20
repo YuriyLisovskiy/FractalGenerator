@@ -5,4 +5,5 @@ const (
 	SqlDeleteAllFromServerQueues = "DELETE FROM ServerQueue WHERE TRUE;"
 	SqlCreateServerQueue = "SELECT CreateServerQueue($1, $2);"
 	SqlDeleteServerQueue = "SELECT DeleteServerQueue($1, $2);"
+	SqlCreateTask = "SELECT CreateTask(($1), ($2), ($3), ($4));"
 )

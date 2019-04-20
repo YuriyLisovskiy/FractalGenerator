@@ -1,4 +1,4 @@
-package manager_server
+package load_balancer_server
 
 import (
 	"fmt"
