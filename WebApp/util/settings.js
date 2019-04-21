@@ -1,5 +1,6 @@
-const secret = 'secret_key';
 const dbModule = require('./db');
+
+const secret = 'secret_key';
 
 const dbConnectionData = {
 	user: 'fractal_gen_user',
@@ -20,7 +21,12 @@ if (!db) {
 	}
 }
 
-let host = 'http://localhost:3000';
+const host = 'http://localhost:3000';
+
+const remoteServerRoot = {
+	remote_host: 'localhost',
+	remote_port: 8080
+};
 
 let transporterData = {
 	host: 'smtp.gmail.com',
@@ -32,12 +38,13 @@ let transporterData = {
 	}
 };
 
-let UserTasksLimit = 5;
+const UserTasksLimit = 5;
 
 module.exports = {
 	SecretKey: secret,
 	Db: db,
 	transporterData: transporterData,
 	host: host,
-	UserTasksLimit: UserTasksLimit
+	UserTasksLimit: UserTasksLimit,
+	RemoteServerRoot: remoteServerRoot
 };

@@ -1,5 +1,6 @@
-const util = require('../util/util');
-const settings = require('../util/settings');
+const util = require('../util/util'),
+	settings = require('../util/settings'),
+	rpc = require('../util/rpc');
 
 let db = settings.Db;
 
@@ -61,17 +62,24 @@ module.exports = {
 				);
 			},
 			post: (request, response) => {
-				// TODO: send remote server to start task, if success:
 				db.getTask(request.body.task_id,
 					(task) => {
 						if (task['status'] === 'Not Started') {
-							db.updateTask(task['id'], 0, 'In Queue',
-								(updTask) => {
-									util.SendSuccessResponse(response, 200, updTask);
+							rpc.getAvailableServerRemote(
+								() => {
+									db.updateTask(task['id'], 0, 'In Queue',
+										(updTask) => {
+											util.SendSuccessResponse(response, 200, updTask);
+										},
+										(err) => {
+											util.SendInternalServerError(response);
+											console.log('[ERROR] administration.AdministrationTask, post, updateTask: ' + err.detail);
+										}
+									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] administration.AdministrationTask, post, updateTask: ' + err.detail);
+									console.log('[ERROR] administration.AdministrationTask, post, getAvailableServerRemote: ' + err.detail);
 								}
 							);
 						}
@@ -83,13 +91,22 @@ module.exports = {
 				);
 			},
 			put: (request, response) => {
-				// TODO: send remote server to stop task, if success:
 				db.getTask(request.body.task_id,
 					(task) => {
 						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
 							db.updateTask(task['id'], 0, 'Not Started',
 								(updTask) => {
-									util.SendSuccessResponse(response, 200, updTask);
+									rpc.popTaskFromServerRemote(
+										{remote_host: task['server_host'], remote_port: task['server_port']},
+										updTask['id'],
+										() => {
+											util.SendSuccessResponse(response, 200, updTask);
+										},
+										(err) => {
+											util.SendInternalServerError(response);
+											console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
+										}
+									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
@@ -105,16 +122,33 @@ module.exports = {
 				);
 			},
 			delete_: (request, response) => {
-				// TODO: send remote server to delete task, if success:
 				db.getTask(request.body.task_id,
 					(task) => {
-						db.deleteTask(task['id'],
-							(updTask) => {
-								util.SendSuccessResponse(response, 200, updTask);
+						db.updateTask(task['id'], 0, 'Not Started',
+							() => {
+								rpc.popTaskFromServerRemote(
+									{remote_host: task['server_host'], remote_port: task['server_port']},
+									task['id'],
+									() => {
+										db.deleteTask(task['id'],
+											(updTask) => {
+												util.SendSuccessResponse(response, 200, updTask);
+											},
+											(err) => {
+												util.SendInternalServerError(response);
+												console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
+											}
+										);
+									},
+									(err) => {
+										util.SendInternalServerError(response);
+										console.log('[ERROR] administration.AdministrationTask, delete, popTaskFromServerRemote: ' + err.detail);
+									}
+								);
 							},
 							(err) => {
 								util.SendInternalServerError(response);
-								console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
+								console.log('[ERROR] administration.AdministrationTask, delete, updateTask: ' + err.detail);
 							}
 						);
 					},

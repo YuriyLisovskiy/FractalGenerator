@@ -16,12 +16,12 @@ type ServerManager struct {
 
 func New() ServerManager {
 	fmt.Printf(
-		"Starting server manager at http://%s:%d/\nQuit the server with CONTROL-C.",
+		"[INFO] Starting server manager at http://%s:%d/\nQuit the server with CONTROL-C.",
 		settings.HOST, settings.PORT,
 	)
 	return ServerManager {
 		DbClient: db.New(),
-		NextPort: 3000,
+		NextPort: settings.PORT + 1,
 	}
 }
 
@@ -49,7 +49,7 @@ func (s *ServerManager) startComputationServer() (string, int, error) {
 	}
 	srv := server.NewServer(settings.HOST, s.NextPort, computationServer.GetHandlers())
 	fmt.Printf(
-		"Starting computation server at http://%s:%d/",
+		"[INFO] Starting computation server at http://%s:%d/\n",
 		settings.HOST, s.NextPort,
 	)
 	go func(host string, port int) {

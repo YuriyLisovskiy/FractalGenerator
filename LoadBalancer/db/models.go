@@ -13,6 +13,3 @@ type ServerQueue struct {
 func (sq ServerQueue) String() string {
 	return fmt.Sprintf("Server: id=%d, host='%s', port=%d", sq.id, sq.ServerHost, sq.ServerPort)
 }
-
-
-type Task struct {}

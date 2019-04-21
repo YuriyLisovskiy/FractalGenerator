@@ -25,6 +25,7 @@ func (s *ComputationServer) GetHandlers() *map[string]func(http.ResponseWriter, 
 	mux := make(map[string]func(http.ResponseWriter, *http.Request))
 
 	mux["/task/push"] = server.Request(s.pushTask, "POST", "task_title", "task_type", "owner_id")
+	mux["/task/pop"] = server.Request(s.popTask, "POST", "task_id")
 
 	return &mux
 }

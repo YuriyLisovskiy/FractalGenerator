@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const util = require('../util/util');
 const settings = require('../util/settings');
+const rpc = require('../util/rpc');
 
 let db = settings.Db;
 
@@ -130,17 +131,24 @@ module.exports = {
 				);
 			},
 			post: (request, response) => {
-				// TODO: send remote server to start task, if success:
 				db.getUserTask(request.user.id, request.body.task_id,
 					(task) => {
 						if (task['status'] === 'Not Started') {
-							db.updateTask(task['id'], 0, 'In Queue',
-								(updTask) => {
-									util.SendSuccessResponse(response, 200, updTask);
+							rpc.getAvailableServerRemote(
+								() => {
+									db.updateTask(task['id'], 0, 'In Queue',
+										(updTask) => {
+											util.SendSuccessResponse(response, 200, updTask);
+										},
+										(err) => {
+											util.SendInternalServerError(response);
+											console.log('[ERROR] profile.UserTask, post, updateTask: ' + err.detail);
+										}
+									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] profile.UserTask, post, updateTask: ' + err.detail);
+									console.log('[ERROR] profile.UserTask, post, getAvailableServerRemote: ' + err.detail);
 								}
 							);
 						}
@@ -152,17 +160,26 @@ module.exports = {
 				);
 			},
 			put: (request, response) => {
-				// TODO: send remote server to stop task, if success:
 				db.getUserTask(request.user.id, request.body.task_id,
 					(task) => {
 						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
 							db.updateTask(task['id'], 0, 'Not Started',
 								(updTask) => {
-									util.SendSuccessResponse(response, 200, updTask);
+									rpc.popTaskFromServerRemote(
+										{remote_host: task['server_host'], remote_port: task['server_port']},
+										updTask['id'],
+										() => {
+											util.SendSuccessResponse(response, 200, updTask);
+										},
+										(err) => {
+											util.SendInternalServerError(response);
+											console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
+										}
+									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] profile.UserTask, put, updateTask: ' + err.detail);
+									console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
 								}
 							);
 						}
@@ -174,16 +191,33 @@ module.exports = {
 				);
 			},
 			delete_: (request, response) => {
-				// TODO: send remote server to delete task, if success:
 				db.getUserTask(request.user.id, request.body.task_id,
 					(task) => {
-						db.deleteTask(task['id'],
-							(updTask) => {
-								util.SendSuccessResponse(response, 200, updTask);
+						db.updateTask(task['id'], 0, 'Not Started',
+							() => {
+								rpc.popTaskFromServerRemote(
+									{remote_host: task['server_host'], remote_port: task['server_port']},
+									task['id'],
+									() => {
+										db.deleteTask(task['id'],
+											(updTask) => {
+												util.SendSuccessResponse(response, 200, updTask);
+											},
+											(err) => {
+												util.SendInternalServerError(response);
+												console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
+											}
+										);
+									},
+									(err) => {
+										util.SendInternalServerError(response);
+										console.log('[ERROR] profile.UserTask, delete, popTaskFromServerRemote: ' + err.detail);
+									}
+								);
 							},
 							(err) => {
 								util.SendInternalServerError(response);
-								console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
+								console.log('[ERROR] administration.AdministrationTask, delete, updateTask: ' + err.detail);
 							}
 						);
 					},
@@ -203,8 +237,47 @@ module.exports = {
 				db.countUserActiveTasks(request.user.id,
 					(data) => {
 						util.Render(request, response, 'create_task', {
-							block_task_creation: data['countuseractivetasks'] > settings.UserTasksLimit
+							block_task_creation: data['countuseractivetasks'] >= settings.UserTasksLimit
 						});
+					},
+					(err) => {
+						util.SendInternalServerError(response);
+						console.log('[ERROR] profile.CreateTask, get, countUserActiveTasks: ' + err.detail);
+					}
+				);
+			},
+			post: (request, response) => {
+				db.countUserActiveTasks(request.user.id,
+					(data) => {
+						if (data['countuseractivetasks'] >= settings.UserTasksLimit) {
+							response.redirect('/user/create/fractal');
+						} else {
+							rpc.getAvailableServerRemote(
+								(serverInfo) => {
+									let formData = request.body;
+									rpc.pushTaskToServerRemote(
+										serverInfo,
+										{
+											task_title: formData.task_title,
+											task_type: formData.task_type,
+											owner_id: request.user.id
+										},
+										(data) => {
+											console.log(data);
+											response.redirect('/user/create/fractal');
+										},
+										(err) => {
+											util.SendInternalServerError(response, err);
+											console.log('[ERROR] profile.CreateTask, post, pushTaskToServerRemote: ' + err.detail);
+										}
+									);
+								},
+								(err) => {
+									util.SendInternalServerError(response, err);
+									console.log('[ERROR] profile.CreateTask, post, getAvailableServerRemote: ' + err.detail);
+								}
+							);
+						}
 					},
 					(err) => {
 						util.SendInternalServerError(response);

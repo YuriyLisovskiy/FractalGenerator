@@ -74,3 +74,12 @@ func (c *Client) CreateTask(queueId int, taskTitle string, taskType int, ownerId
 	}
 	return lastId, nil
 }
+
+func (c *Client) UpdateTask(taskId int, progress int, status string) (int, error) {
+	var lastId int
+	err := c.db.QueryRow(SqlUpdateTask, taskId, progress, status).Scan(&lastId)
+	if err != nil {
+		return -1, err
+	}
+	return lastId, nil
+}

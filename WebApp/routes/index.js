@@ -13,5 +13,6 @@ router.get('/user/fractals', ProfileViews.UserFractals);
 router.get('/user/create/fractal', ProfileViews.CreateTask);
 
 router.post('/register', AuthViews.Register);
+router.post('/user/create/fractal', ProfileViews.CreateTask);
 
 module.exports = router;
