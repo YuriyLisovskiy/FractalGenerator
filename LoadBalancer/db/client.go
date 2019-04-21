@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
+	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	_ "github.com/lib/pq"
 	"sync"
 )
@@ -82,4 +83,33 @@ func (c *Client) UpdateTask(taskId int, progress int, status string) (int, error
 		return -1, err
 	}
 	return lastId, nil
+}
+
+func (c *Client) GetTasks(queueId int, status string, limit int) (util.Queue, error) {
+	rows, err := c.db.Query(SqlGetTasksByQueueAndStatus, queueId, status, limit)
+	if err != nil {
+		return util.Queue{}, errors.New(fmt.Sprintf("Query %s failed: %s", SqlGetTasksByQueueAndStatus, err.Error()))
+	}
+	defer rows.Close()
+	tasks := util.NewQueue()
+	for rows.Next() {
+		task := TaskItem{}
+		var fractalId interface{}
+		err := rows.Scan(
+			&task.Id, &task.Title, &task.OwnerId, &task.Progress, &task.Status, &fractalId, &task.QueueId, &task.TaskType,
+		)
+		if err == nil {
+			if fractalId != nil {
+				task.Fractal = fractalId.(int)
+			}
+			tasks.Push(task)
+		} else {
+			fmt.Println(err)
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		return tasks, err
+	}
+	return tasks, nil
 }

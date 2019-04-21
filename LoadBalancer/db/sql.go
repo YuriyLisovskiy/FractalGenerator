@@ -6,6 +6,6 @@ const (
 	SqlCreateServerQueue = "SELECT CreateServerQueue($1, $2);"
 	SqlDeleteServerQueue = "SELECT DeleteServerQueue($1, $2);"
 	SqlCreateTask = "SELECT CreateTask(($1), ($2), ($3), ($4));"
-	SqlUpdateTask = "SELECT UpdateTask(($1), ($2), ($3));"
-	SqlGetLastServerPort = "SELECT GetLastServerPort();"
+	SqlUpdateTask = "SELECT * FROM UpdateTask(($1), ($2), ($3));"
+	SqlGetTasksByQueueAndStatus = "SELECT * FROM GetTasksByQueueAndStatus(($1), ($2), ($3));"
 )

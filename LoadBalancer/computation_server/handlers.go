@@ -11,7 +11,6 @@ func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.R
 	taskTitle, _ := claims.GetString("task_title")
 	taskType, _ := claims.GetInt64("task_type")
 	ownerId, _ := claims.GetInt64("owner_id")
-
 	_, err := s.DbClient.CreateTask(int(s.queueId), taskTitle, int(taskType), int(ownerId))
 	if err != nil {
 		server.Error(writer, err.Error(), http.StatusInternalServerError)

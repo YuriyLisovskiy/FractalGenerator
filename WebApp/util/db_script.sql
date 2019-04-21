@@ -85,7 +85,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE VIEW GetAllTasksAdminView AS
 SELECT Tasks.id,
        Tasks.title,
-       Users.username as owner_name,
+       Users.username    as owner_name,
        Tasks.progress,
        Tasks.status,
        Fractals.url_path as fractal_link,
@@ -97,7 +97,14 @@ FROM Tasks
        LEFT JOIN Fractals ON Tasks.fractal = Fractals.id;
 
 CREATE OR REPLACE FUNCTION GetUserTasksFunction(u_id INTEGER)
-  RETURNS TABLE (id INTEGER, title VARCHAR(512), progress INTEGER, status VARCHAR(11), fractal_link VARCHAR(1024)) AS
+  RETURNS TABLE
+          (
+            id           INTEGER,
+            title        VARCHAR(512),
+            progress     INTEGER,
+            status       VARCHAR(11),
+            fractal_link VARCHAR(1024)
+          ) AS
 $$
 BEGIN
   RETURN QUERY (
@@ -136,17 +143,23 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_owner INTEGER)
-  RETURNS TABLE(last_id INTEGER) AS
+  RETURNS TABLE
+          (
+            last_id INTEGER
+          ) AS
 $$
 BEGIN
   UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue_id;
-  RETURN QUERY INSERT INTO Tasks(title, owner_id, queue_id, task_type)
+  RETURN QUERY INSERT INTO Tasks (title, owner_id, queue_id, task_type)
     VALUES (t_title, t_owner, queue_id, t_type) RETURNING Tasks.id;
 END
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION UpdateTask(task_id INTEGER, task_progress INTEGER, task_status VARCHAR(11))
-  RETURNS TABLE(last_id INTEGER) AS
+  RETURNS TABLE
+          (
+            last_id INTEGER
+          ) AS
 $$
 DECLARE
   task  RECORD;
@@ -164,6 +177,9 @@ BEGIN
     LIMIT 1 INTO queue;
     UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue.id;
     RETURN QUERY UPDATE Tasks SET queue_id = queue.id, status = task_status, progress = task_progress
+      WHERE id = task_id RETURNING Tasks.id;
+  ELSE
+    RETURN QUERY UPDATE Tasks SET status = task_status, progress = task_progress
       WHERE id = task_id RETURNING Tasks.id;
   END IF;
 END
@@ -198,7 +214,10 @@ END
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION CreateServerQueue(host VARCHAR(1024), port INTEGER)
-  RETURNS TABLE (last_id INTEGER) AS
+  RETURNS TABLE
+          (
+            last_id INTEGER
+          ) AS
 $$
 DECLARE
   tmp RECORD;
@@ -209,7 +228,7 @@ BEGIN
   WHERE ServerQueue.server_host = host
     AND ServerQueue.server_port = port INTO tmp;
   IF tmp IS NULL THEN
-    RETURN QUERY INSERT INTO ServerQueue(server_host, server_port) VALUES (host, port) RETURNING ServerQueue.id;
+    RETURN QUERY INSERT INTO ServerQueue (server_host, server_port) VALUES (host, port) RETURNING ServerQueue.id;
   ELSE
     RETURN QUERY SELECT -1;
   END IF;
@@ -217,7 +236,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION DeleteServerQueue(host VARCHAR(1024), port INTEGER)
-  RETURNS TABLE (last_id INTEGER) AS
+  RETURNS TABLE
+          (
+            last_id INTEGER
+          ) AS
 $$
 DECLARE
   tmp RECORD;
@@ -240,7 +262,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION GetAvailableServer()
-  RETURNS TABLE (id INTEGER, server_host VARCHAR(1024), server_port INTEGER, tasks_count INTEGER, servers_amount INTEGER) AS
+  RETURNS TABLE
+          (
+            id             INTEGER,
+            server_host    VARCHAR(1024),
+            server_port    INTEGER,
+            tasks_count    INTEGER,
+            servers_amount INTEGER
+          ) AS
 $$
 DECLARE
   servers_count INTEGER;
@@ -256,7 +285,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION GetLastServerPort()
-  RETURNS TABLE (last_port INTEGER) AS
+  RETURNS TABLE
+          (
+            last_port INTEGER
+          ) AS
 $$
 BEGIN
   RETURN QUERY (
@@ -264,4 +296,35 @@ BEGIN
     FROM ServerQueue
   );
 END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION GetTasksByQueueAndStatus(q_id INTEGER, q_status VARCHAR(11), q_limit INTEGER)
+  RETURNS TABLE
+          (
+            id        INTEGER,
+            title     VARCHAR(512),
+            owner_id  INTEGER,
+            progress  INTEGER,
+            status    VARCHAR(11),
+            fractal   INTEGER,
+            queue_id  INTEGER,
+            task_type INTEGER
+          ) AS
+$$
+BEGIN
+  RETURN QUERY (
+    SELECT Tasks.id,
+           Tasks.title,
+           Tasks.owner_id,
+           Tasks.progress,
+           Tasks.status,
+           Tasks.fractal,
+           Tasks.queue_id,
+           Tasks.task_type
+    FROM Tasks
+    WHERE Tasks.queue_id = q_id
+      AND Tasks.status = q_status
+    LIMIT q_limit
+  );
+END
 $$ LANGUAGE plpgsql;

@@ -74,9 +74,6 @@ let createTaskRow = (item) => {
 				task_id: item['id']
 			},
 			success: (data) => {
-				if (data['task_status'] === 'Finished') {
-					clearInterval(intervalId);
-				}
 				let prs = document.getElementById('progress_' + item['id']);
 				let sts = document.getElementById('status_' + item['id']);
 				prs.innerText = data['task_progress'] + '%';
@@ -94,6 +91,9 @@ let createTaskRow = (item) => {
 					default:
 						sts.style.backgroundColor = 'transparent';
 						break;
+				}
+				if (data['task_status'] === 'Finished') {
+					clearInterval(intervalId);
 				}
 			},
 			error: (data) => {

@@ -77,29 +77,28 @@ let createTaskRow = (item) => {
 				task_id: item['id']
 			},
 			success: (data) => {
+				let prs = document.getElementById('progress_' + item['id']);
+				let sts = document.getElementById('status_' + item['id']);
+				let srv = document.getElementById('task_server_' + item['id']);
+				prs.innerText = data['task_progress'] + '%';
+				sts.innerText = data['task_status'].toString();
+				srv.innerText = data['task_server'].toString();
+				switch (data['task_status']) {
+					case 'Running':
+						sts.style.backgroundColor = 'lightgreen';
+						break;
+					case 'Finished':
+						sts.style.backgroundColor = 'lightgray';
+						break;
+					case 'In Queue':
+						sts.style.backgroundColor = 'yellow';
+						break;
+					default:
+						sts.style.backgroundColor = 'transparent';
+						break;
+				}
 				if (data['task_status'] === 'Finished') {
 					clearInterval(intervalId);
-				} else {
-					let prs = document.getElementById('progress_' + item['id']);
-					let sts = document.getElementById('status_' + item['id']);
-					let srv = document.getElementById('task_server_' + item['id']);
-					prs.innerText = data['task_progress'] + '%';
-					sts.innerText = data['task_status'].toString();
-					srv.innerText = data['task_server'].toString();
-					switch (data['task_status']) {
-						case 'Running':
-							sts.style.backgroundColor = 'lightgreen';
-							break;
-						case 'Finished':
-							sts.style.backgroundColor = 'lightgray';
-							break;
-						case 'In Queue':
-							sts.style.backgroundColor = 'yellow';
-							break;
-						default:
-							sts.style.backgroundColor = 'transparent';
-							break;
-					}
 				}
 			},
 			error: (data) => {

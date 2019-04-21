@@ -42,29 +42,30 @@ func (s *ServerManager) GetHandlers() *map[string]func(http.ResponseWriter, *htt
 }
 
 func (s *ServerManager) startComputationServer() (string, int, error) {
-	computationServer := computation_server.New(settings.HOST, s.NextPort)
-	err := computationServer.Initialize()
+	srv, err := computation_server.New(settings.HOST, s.NextPort)
 	if err != nil {
 		return "", 0, err
 	}
-	srv := server.NewServer(settings.HOST, s.NextPort, computationServer.GetHandlers())
-	fmt.Printf(
-		"[INFO] Starting computation server at http://%s:%d/\n",
-		settings.HOST, s.NextPort,
-	)
-	go func(host string, port int) {
-		err = srv.ListenAndServe()
-		if err != nil {
-			fmt.Println(err)
-			s.NextPort--
-			return
-		}
-		err = computationServer.CleanUp()
-		if err != nil {
-			fmt.Println(err)
-		}
-		s.NextPort--
-	}(settings.HOST, s.NextPort)
 	s.NextPort++
-	return settings.HOST, s.NextPort - 1, nil
+	err = srv.InitTaskExecutor()
+	if err != nil {
+		fmt.Println(err)
+		s.NextPort--
+		return "", 0, err
+	} else {
+		go func(host string, port int) {
+			err = srv.Server.ListenAndServe()
+			if err != nil {
+				fmt.Println(err)
+				s.NextPort--
+				return
+			}
+			err = srv.CleanUp()
+			if err != nil {
+				fmt.Println(err)
+			}
+			s.NextPort--
+		}(settings.HOST, s.NextPort)
+		return settings.HOST, s.NextPort - 1, nil
+	}
 }

@@ -259,7 +259,7 @@ module.exports = {
 										serverInfo,
 										{
 											task_title: formData.task_title,
-											task_type: formData.task_type,
+											task_type: parseInt(formData.task_type),
 											owner_id: request.user.id
 										},
 										(data) => {
