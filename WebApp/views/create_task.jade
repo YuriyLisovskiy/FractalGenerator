@@ -11,9 +11,16 @@ block body
 		else
 			form(method="post")
 				div(class="form-group row")
-					label(for="username", class="col-sm-12") Title:
-						input(type="text", name="task_title", class="form-control", id="title", placeholder="Type text...", required)
-				div(class="form-group row")
 					label(for="username", class="col-sm-12") Type:
-						input(type="number", name="task_type", class="form-control", id="type", placeholder="Type number...", required)
+						div(class="form-group")
+							label(class="type-selection")
+							select(class="form-control", id="type-selection", name="task_type")
+								option(value="1") Mandelbrot Set
+				div(class="form-group row")
+					label(for="img-width", class="col-sm-4") Width:
+						input(type="number", name="width", class="form-control", id="img-width", placeholder="Type number...", required)
+					label(for="img-height", class="col-sm-4") Height:
+						input(type="number", name="height", class="form-control", id="img-height", placeholder="Type number...", required)
+					label(for="max-iterations", class="col-sm-4") Max Iterations:
+						input(type="number", name="max_iterations", class="form-control", id="max-iterations", placeholder="Type number...", required)
 				button(type="submit", id="save-profile", class="btn btn-success") Generate

@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS Fractals
   id       SERIAL PRIMARY KEY,
   title    VARCHAR(200)  NOT NULL,
   url_path VARCHAR(1024) NOT NULL,
+  width    INTEGER       NOT NULL,
+  height   INTEGER       NOT NULL,
   owner    INTEGER       NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE
 );
 
@@ -26,15 +28,18 @@ CREATE TABLE IF NOT EXISTS ServerQueue
 
 CREATE TABLE IF NOT EXISTS Tasks
 (
-  id        SERIAL PRIMARY KEY,
-  title     VARCHAR(512) NOT NULL,
-  owner_id  INTEGER      NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
-  progress  INTEGER      NOT NULL DEFAULT 0 CHECK ( progress >= 0 AND progress <= 100 ),
-  status    VARCHAR(11)  NOT NULL DEFAULT 'In Queue' CHECK ( status = 'Running' OR status = 'Not Started' OR
-                                                             status = 'Finished' OR status = 'In Queue'),
-  fractal   INTEGER      NULL REFERENCES Fractals (id) ON DELETE CASCADE,
-  queue_id  INTEGER      NULL REFERENCES ServerQueue (id) ON DELETE CASCADE,
-  task_type INTEGER      NOT NULL
+  id             SERIAL PRIMARY KEY,
+  title          VARCHAR(512) NOT NULL,
+  owner_id       INTEGER      NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
+  progress       INTEGER      NOT NULL DEFAULT 0 CHECK ( progress >= 0 AND progress <= 101 ),
+  status         VARCHAR(11)  NOT NULL DEFAULT 'In Queue' CHECK ( status = 'Running' OR status = 'Not Started' OR
+                                                                  status = 'Finished' OR status = 'In Queue'),
+  fractal        INTEGER      NULL REFERENCES Fractals (id) ON DELETE CASCADE,
+  queue_id       INTEGER      NULL REFERENCES ServerQueue (id) ON DELETE CASCADE,
+  task_type      INTEGER      NOT NULL,
+  width          INTEGER      NOT NULL,
+  height         INTEGER      NOT NULL,
+  max_iterations INTEGER      NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION GetUserFractals(user_id INTEGER)
@@ -42,25 +47,34 @@ CREATE OR REPLACE FUNCTION GetUserFractals(user_id INTEGER)
           (
             id       INTEGER,
             title    VARCHAR(200),
-            url_path VARCHAR(1024)
+            url_path VARCHAR(1024),
+            width    INTEGER,
+            height   INTEGER
           ) AS
 $$
 BEGIN
-  RETURN QUERY (SELECT Fractals.id, Fractals.title, Fractals.url_path FROM Fractals WHERE Fractals.owner = user_id);
+  RETURN QUERY (
+    SELECT Fractals.id, Fractals.title, Fractals.url_path, Fractals.width, Fractals.height
+    FROM Fractals
+    WHERE Fractals.owner = user_id
+  );
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION GetTaskAdminFunction(task_id INTEGER)
   RETURNS TABLE
           (
-            id           INTEGER,
-            title        VARCHAR(512),
-            username     VARCHAR(100),
-            progress     INTEGER,
-            status       VARCHAR(11),
-            fractal_link VARCHAR(1024),
-            server_host  VARCHAR(1024),
-            server_port  INTEGER
+            id             INTEGER,
+            title          VARCHAR(512),
+            username       VARCHAR(100),
+            progress       INTEGER,
+            status         VARCHAR(11),
+            fractal_link   VARCHAR(1024),
+            server_host    VARCHAR(1024),
+            server_port    INTEGER,
+            width          INTEGER,
+            height         INTEGER,
+            max_iterations INTEGER
           ) AS
 $$
 BEGIN
@@ -72,7 +86,10 @@ BEGIN
            Tasks.status,
            Fractals.url_path,
            ServerQueue.server_host,
-           ServerQueue.server_port
+           ServerQueue.server_port,
+           Tasks.width,
+           Tasks.height,
+           Tasks.max_iterations
     FROM Tasks
            JOIN Users ON Tasks.owner_id = Users.user_id
            LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
@@ -90,7 +107,10 @@ SELECT Tasks.id,
        Tasks.status,
        Fractals.url_path as fractal_link,
        ServerQueue.server_host,
-       ServerQueue.server_port
+       ServerQueue.server_port,
+       Tasks.width,
+       Tasks.height,
+       Tasks.max_iterations
 FROM Tasks
        JOIN Users ON Tasks.owner_id = Users.user_id
        LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
@@ -99,16 +119,26 @@ FROM Tasks
 CREATE OR REPLACE FUNCTION GetUserTasksFunction(u_id INTEGER)
   RETURNS TABLE
           (
-            id           INTEGER,
-            title        VARCHAR(512),
-            progress     INTEGER,
-            status       VARCHAR(11),
-            fractal_link VARCHAR(1024)
+            id             INTEGER,
+            title          VARCHAR(512),
+            progress       INTEGER,
+            status         VARCHAR(11),
+            fractal_link   VARCHAR(1024),
+            width          INTEGER,
+            height         INTEGER,
+            max_iterations INTEGER
           ) AS
 $$
 BEGIN
   RETURN QUERY (
-    SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path
+    SELECT Tasks.id,
+           Tasks.title,
+           Tasks.progress,
+           Tasks.status,
+           Fractals.url_path,
+           Tasks.width,
+           Tasks.height,
+           Tasks.max_iterations
     FROM Tasks
            JOIN Users ON Tasks.owner_id = Users.user_id
            LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
@@ -121,17 +151,28 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION GetUserTaskFunction(u_id INTEGER, task_id INTEGER)
   RETURNS TABLE
           (
-            id           INTEGER,
-            title        VARCHAR(512),
-            progress     INTEGER,
-            status       VARCHAR(11),
-            fractal_link VARCHAR(1024),
-            queue_id     INTEGER
+            id             INTEGER,
+            title          VARCHAR(512),
+            progress       INTEGER,
+            status         VARCHAR(11),
+            fractal_link   VARCHAR(1024),
+            queue_id       INTEGER,
+            width          INTEGER,
+            height         INTEGER,
+            max_iterations INTEGER
           ) AS
 $$
 BEGIN
   RETURN QUERY (
-    SELECT Tasks.id, Tasks.title, Tasks.progress, Tasks.status, Fractals.url_path, ServerQueue.id
+    SELECT Tasks.id,
+           Tasks.title,
+           Tasks.progress,
+           Tasks.status,
+           Fractals.url_path,
+           ServerQueue.id,
+           Tasks.width,
+           Tasks.height,
+           Tasks.max_iterations
     FROM Tasks
            JOIN Users ON Tasks.owner_id = Users.user_id
            LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
@@ -142,7 +183,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_owner INTEGER)
+CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_width INTEGER,
+                                      t_height INTEGER, t_max_iterations INTEGER, t_owner INTEGER)
   RETURNS TABLE
           (
             last_id INTEGER
@@ -150,8 +192,8 @@ CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_
 $$
 BEGIN
   UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue_id;
-  RETURN QUERY INSERT INTO Tasks (title, owner_id, queue_id, task_type)
-    VALUES (t_title, t_owner, queue_id, t_type) RETURNING Tasks.id;
+  RETURN QUERY INSERT INTO Tasks (title, owner_id, queue_id, task_type, width, height, max_iterations)
+    VALUES (t_title, t_owner, queue_id, t_type, t_width, t_height, t_max_iterations) RETURNING Tasks.id;
 END
 $$ LANGUAGE plpgsql;
 
@@ -301,14 +343,17 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION GetTasksByQueueAndStatus(q_id INTEGER, q_status VARCHAR(11), q_limit INTEGER)
   RETURNS TABLE
           (
-            id        INTEGER,
-            title     VARCHAR(512),
-            owner_id  INTEGER,
-            progress  INTEGER,
-            status    VARCHAR(11),
-            fractal   INTEGER,
-            queue_id  INTEGER,
-            task_type INTEGER
+            id             INTEGER,
+            title          VARCHAR(512),
+            owner_id       INTEGER,
+            progress       INTEGER,
+            status         VARCHAR(11),
+            fractal        INTEGER,
+            queue_id       INTEGER,
+            task_type      INTEGER,
+            width          INTEGER,
+            height         INTEGER,
+            max_iterations INTEGER
           ) AS
 $$
 BEGIN
@@ -320,7 +365,10 @@ BEGIN
            Tasks.status,
            Tasks.fractal,
            Tasks.queue_id,
-           Tasks.task_type
+           Tasks.task_type,
+           Tasks.width,
+           Tasks.height,
+           Tasks.max_iterations
     FROM Tasks
     WHERE Tasks.queue_id = q_id
       AND Tasks.status = q_status

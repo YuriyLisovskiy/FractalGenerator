@@ -258,8 +258,10 @@ module.exports = {
 									rpc.pushTaskToServerRemote(
 										serverInfo,
 										{
-											task_title: formData.task_title,
 											task_type: parseInt(formData.task_type),
+											width: parseInt(formData.width),
+											height: parseInt(formData.height),
+											max_iterations: parseInt(formData.max_iterations),
 											owner_id: request.user.id
 										},
 										(data) => {

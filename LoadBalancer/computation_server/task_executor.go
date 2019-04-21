@@ -2,25 +2,40 @@ package computation_server
 
 import (
 	"fmt"
-	"github.com/YuriyLisovskiy/LoadBalancer/db"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
+	"github.com/YuriyLisovskiy/LoadBalancer/util/models"
 	"time"
 )
 
-func (s *ComputationServer) executeTask(task db.TaskItem) {
+func (s *ComputationServer) executeTask(task models.TaskItem) {
 	_, err := s.DbClient.UpdateTask(task.Id, task.Progress, "Running")
 	if err == nil {
 		s.runningTasks++
 		go func() {
-			for p := 0; p < 100; p++ {
-				_, err = s.DbClient.UpdateTask(task.Id, p, "Running")
+			for !task.Generator.IsFinished() {
+				err := task.Generator.HandleProgress(func(progress int) error {
+					status := "Running"
+					if progress >= 100 {
+						status = "Finished"
+						progress = 100
+					}
+					_, err = s.DbClient.UpdateTask(task.Id, progress, status)
+					if err != nil {
+						return err
+					}
+					return nil
+				})
 				if err != nil {
 					fmt.Println(err)
-				} else {
-					time.Sleep(500 * time.Millisecond)
 				}
+				time.Sleep(500 * time.Millisecond)
 			}
-			_, _ = s.DbClient.UpdateTask(task.Id, 100, "Finished")
+		}()
+		go func() {
+			if task.Generator.Generate() != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("Finished")
 			s.runningTasks--
 		}()
 	} else {
@@ -35,7 +50,7 @@ func (s *ComputationServer) InitTaskExecutor() error {
 	}
 	for i := 0; i < settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty(); i++ {
 		taskObj := queuedTasks.Pop()
-		task := taskObj.(db.TaskItem)
+		task := taskObj.(models.TaskItem)
 		s.executeTask(task)
 	}
 	go func() {
@@ -45,7 +60,7 @@ func (s *ComputationServer) InitTaskExecutor() error {
 				if err == nil {
 					for s.runningTasks < settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty() {
 						taskObj := queuedTasks.Pop()
-						task := taskObj.(db.TaskItem)
+						task := taskObj.(models.TaskItem)
 						s.executeTask(task)
 					}
 				} else {

@@ -8,10 +8,14 @@ import (
 )
 
 func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.Request, claims jwt.Claims) {
-	taskTitle, _ := claims.GetString("task_title")
 	taskType, _ := claims.GetInt64("task_type")
+	width, _ := claims.GetInt64("width")
+	height, _ := claims.GetInt64("height")
+	maxIterations, _ := claims.GetInt64("max_iterations")
 	ownerId, _ := claims.GetInt64("owner_id")
-	_, err := s.DbClient.CreateTask(int(s.queueId), taskTitle, int(taskType), int(ownerId))
+	_, err := s.DbClient.CreateTask(
+		int(s.queueId), int(taskType), int(width), int(height), int(maxIterations), int(ownerId),
+	)
 	if err != nil {
 		server.Error(writer, err.Error(), http.StatusInternalServerError)
 	} else {

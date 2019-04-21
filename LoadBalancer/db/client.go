@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 	"github.com/YuriyLisovskiy/LoadBalancer/util"
+	"github.com/YuriyLisovskiy/LoadBalancer/util/fractals"
+	"github.com/YuriyLisovskiy/LoadBalancer/util/models"
 	_ "github.com/lib/pq"
 	"sync"
 )
@@ -67,9 +69,11 @@ func (c *Client) DeleteServerQueue(host string, port int) error {
 	return err
 }
 
-func (c *Client) CreateTask(queueId int, taskTitle string, taskType int, ownerId int) (int, error) {
+func (c *Client) CreateTask(queueId int, taskType int, width int, height int, maxIterations int, ownerId int) (int, error) {
 	var lastId int
-	err := c.db.QueryRow(SqlCreateTask, queueId, taskTitle, taskType, ownerId).Scan(&lastId)
+	err := c.db.QueryRow(
+		SqlCreateTask, queueId, models.TypeToTitle(models.TaskType(taskType)), taskType, width, height, maxIterations, ownerId,
+	).Scan(&lastId)
 	if err != nil {
 		return -1, err
 	}
@@ -93,11 +97,21 @@ func (c *Client) GetTasks(queueId int, status string, limit int) (util.Queue, er
 	defer rows.Close()
 	tasks := util.NewQueue()
 	for rows.Next() {
-		task := TaskItem{}
 		var fractalId interface{}
+		task := models.TaskItem{}
 		err := rows.Scan(
-			&task.Id, &task.Title, &task.OwnerId, &task.Progress, &task.Status, &fractalId, &task.QueueId, &task.TaskType,
+			&task.Id, &task.Title, &task.OwnerId,
+			&task.Progress, &task.Status, &fractalId,
+			&task.QueueId, &task.TaskType, &task.Width,
+			&task.Height, &task.MaxIterations,
 		)
+		var generator fractals.Fractal
+		switch task.TaskType {
+		default:
+			ms := fractals.NewMandelbrotSet(task.Width, task.Height, task.MaxIterations)
+			generator = &ms
+		}
+		task.Generator = generator
 		if err == nil {
 			if fractalId != nil {
 				task.Fractal = fractalId.(int)

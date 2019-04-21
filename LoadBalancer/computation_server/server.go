@@ -35,7 +35,7 @@ func New(host string, port int) (ComputationServer, error) {
 func (s *ComputationServer) getHandlers() *map[string]func(http.ResponseWriter, *http.Request) {
 	mux := make(map[string]func(http.ResponseWriter, *http.Request))
 
-	mux["/task/push"] = server.Request(s.pushTask, "POST", "task_title", "task_type", "owner_id")
+	mux["/task/push"] = server.Request(s.pushTask, "POST", "task_type", "width", "height", "max_iterations", "owner_id")
 	mux["/task/pop"] = server.Request(s.popTask, "POST", "task_id")
 
 	return &mux
