@@ -1,7 +1,7 @@
 package fractals
 
 import (
-	"fmt"
+	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	"image"
 	"image/color"
@@ -9,6 +9,8 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"strconv"
+	"time"
 )
 
 type MandelbrotSet struct {
@@ -28,8 +30,8 @@ type MandelbrotSet struct {
 	isFinished bool
 }
 
-func NewMandelbrotSet(x int, y int, maxIterations int) MandelbrotSet {
-	return MandelbrotSet{
+func NewMandelbrotSet(x int, y int, maxIterations int, nameAppendix string) MandelbrotSet {
+	return MandelbrotSet {
 		xb: 1.0,
 		yb: 1.5,
 		ya: -1.5,
@@ -39,7 +41,7 @@ func NewMandelbrotSet(x int, y int, maxIterations int) MandelbrotSet {
 		maxAbsX: 0.0,
 		maxAbsY: 0.0,
 		maxAbsZ: 0.0,
-		name: "MandelbrotSetFractal",
+		name: "MandelbrotSetFractal_" + nameAppendix + "_" + strconv.Itoa(int(time.Now().Unix())),
 		maxIterations: maxIterations,
 		progress: 0,
 		isFinished: false,
@@ -94,14 +96,8 @@ func (ms *MandelbrotSet) Generate() error {
 	)
 
 	for ky := 0; ky < ms.imgY; ky++ {
-
-	//	yProgress := float32(ky) / (2 * float32(ms.imgY))
-
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
 		for kx := 0; kx < ms.imgX; kx++ {
-
-	//		xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
-
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
 			z := complex(a, b)
@@ -112,9 +108,6 @@ func (ms *MandelbrotSet) Generate() error {
 				}
 
 				ms.progress = progress.Calculate(float32(ky), float32(kx), float32(i))
-
-		//		zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
-		//		ms.progress = xProgress + yProgress + zProgress + halfProgress
 			}
 			v0 := int(255 * math.Abs(real(z)) / ms.maxAbsX)
 			v1 := int(255 * math.Abs(imag(z)) / ms.maxAbsY)
@@ -129,7 +122,7 @@ func (ms *MandelbrotSet) Generate() error {
 		}
 	}
 	ms.progress = 100
-	file, err := os.OpenFile("./"+ms.name+".png", os.O_WRONLY|os.O_CREATE, 0600)
+	file, err := os.OpenFile(ms.Path(), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		ms.isFinished = true
 		return err
@@ -149,12 +142,13 @@ func (ms *MandelbrotSet) Generate() error {
 }
 
 func (ms *MandelbrotSet) HandleProgress(handler func (int) error) error {
-
-	fmt.Println(fmt.Sprintf("Progress: %d", ms.progress))
-
 	return handler(ms.progress)
 }
 
 func (ms *MandelbrotSet) IsFinished() bool {
 	return ms.isFinished
+}
+
+func (ms *MandelbrotSet) Path() string {
+	return settings.MediaDirectory + ms.name + ".png"
 }

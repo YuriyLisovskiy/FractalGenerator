@@ -16,8 +16,7 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 				err := task.Generator.HandleProgress(func(progress int) error {
 					status := "Running"
 					if progress >= 100 {
-						status = "Finished"
-						progress = 100
+						progress = 99
 					}
 					_, err = s.DbClient.UpdateTask(task.Id, progress, status)
 					if err != nil {
@@ -37,6 +36,15 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 			}
 			fmt.Println("Finished")
 			s.runningTasks--
+			err = sendFractal(task)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				_, err = s.DbClient.UpdateTask(task.Id, 100, "Finished")
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
 		}()
 	} else {
 		fmt.Println(err)

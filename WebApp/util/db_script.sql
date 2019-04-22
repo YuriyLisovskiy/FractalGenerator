@@ -376,3 +376,16 @@ BEGIN
   );
 END
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION CreateUserFractal(f_title VARCHAR(200), f_url_path VARCHAR(1024), f_width INTEGER,
+                                             f_height INTEGER, f_owner INTEGER)
+  RETURNS TABLE
+          (
+            last_id INTEGER
+          ) AS
+$$
+BEGIN
+  RETURN QUERY INSERT INTO Fractals (title, url_path, width, height, owner)
+    VALUES (f_title, f_url_path, f_width, f_height, f_owner) RETURNING Fractals.id;
+END;
+$$ LANGUAGE plpgsql;

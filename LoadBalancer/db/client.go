@@ -108,7 +108,7 @@ func (c *Client) GetTasks(queueId int, status string, limit int) (util.Queue, er
 		var generator fractals.Fractal
 		switch task.TaskType {
 		default:
-			ms := fractals.NewMandelbrotSet(task.Width, task.Height, task.MaxIterations)
+			ms := fractals.NewMandelbrotSet(task.Width, task.Height, task.MaxIterations, fmt.Sprintf("%d_%d", task.Id, task.OwnerId))
 			generator = &ms
 		}
 		task.Generator = generator

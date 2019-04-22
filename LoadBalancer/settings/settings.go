@@ -1,5 +1,7 @@
 package settings
 
+import "os"
+
 const (
 	SECRET = "secret_key"
 
@@ -14,4 +16,17 @@ const (
 
 	MAX_SUB_SERVERS = 1
 	MAX_TASKS_PER_SERVER = 2
+
+	SITE_HOST = "http://localhost:3000/api/remote/server/load/picture"
 )
+
+var MediaDirectory = mediaDir()
+
+func mediaDir() string {
+	root, _ := os.Getwd()
+	path := root + "/media/"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_ = os.Mkdir(path, 0777)
+	}
+	return path
+}

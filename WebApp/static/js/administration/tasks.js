@@ -98,6 +98,16 @@ let createTaskRow = (item) => {
 						break;
 				}
 				if (data['task_status'] === 'Finished') {
+					if (item['fractal_link'] !== null) {
+						let fr = document.getElementById('task_image_' + item['id']);
+						fr.innerHTML = '';
+						let fLink = document.createElement('a');
+						fLink.href = item['fractal_link'];
+						fLink.className = 'btn btn-dark';
+						fLink.setAttribute('role', 'button');
+						fLink.appendChild(document.createTextNode('Image'));
+						fr.appendChild(fLink);
+					}
 					clearInterval(intervalId);
 				}
 			},
@@ -172,6 +182,7 @@ let createTaskRow = (item) => {
 	tr.appendChild(progress);
 	tr.appendChild(server);
 	let fractal = document.createElement('th');
+	fractal.setAttribute('id', 'task_image_' + item['id']);
 	if (item['fractal_link'] !== null) {
 		let fLink = document.createElement('a');
 		fLink.href = item['fractal_link'];

@@ -132,6 +132,15 @@ class Db {
 		this.getList('SELECT * FROM GetUserFractals(($1));', [user_id], success, failed);
 	}
 
+	createUserFractal(owner_id, title, width, height, url_path, success, failed) {
+		this.runQuery(
+			'SELECT * FROM CreateUserFractal(($1), ($2), ($3), ($4), ($5))',
+			[title, url_path, width, height, owner_id],
+			success,
+			failed
+		);
+	}
+
 	countUserActiveTasks(user_id, success, failed) {
 		this.getItem(
 			'SELECT * FROM CountUserActiveTasks(($1));',
@@ -141,8 +150,8 @@ class Db {
 		);
 	}
 
-	getServerQueue(queue_id, success, failed) {
-		this.getItem('SELECT * FROM ServerQueue WHERE id = ($1);', [queue_id], success, failed);
+	setFractalIdToTask(task_id, fractal_id, success, failed) {
+		this.runQuery('UPDATE Tasks SET fractal = ($1) WHERE Tasks.id = ($2);', [fractal_id, task_id], success, failed);
 	}
 }
 
