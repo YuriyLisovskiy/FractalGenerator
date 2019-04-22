@@ -2,6 +2,7 @@ package fractals
 
 import (
 	"fmt"
+	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	"image"
 	"image/color"
 	"image/png"
@@ -23,8 +24,7 @@ type MandelbrotSet struct {
 	name          string
 	maxIterations int
 
-	progressChange float32
-	progress       float32
+	progress       int
 	isFinished bool
 }
 
@@ -41,21 +41,22 @@ func NewMandelbrotSet(x int, y int, maxIterations int) MandelbrotSet {
 		maxAbsZ: 0.0,
 		name: "MandelbrotSetFractal",
 		maxIterations: maxIterations,
-		progress: 0.0,
+		progress: 0,
 		isFinished: false,
-		progressChange: 1.0 / float32(x) / float32(y) / float32(maxIterations),
 	}
 }
 
 func (ms *MandelbrotSet) findMaxValues() {
+	progress := util.NewProgress(2, 0, float32(ms.imgY), float32(ms.imgX), float32(ms.maxIterations))
+
 	for ky := 0; ky < ms.imgY; ky++ {
 
-		yProgress := float32(ky) / (2 * float32(ms.imgY))
+	//	yProgress := float32(ky) / (2 * float32(ms.imgY))
 
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
 		for kx := 0; kx < ms.imgX; kx++ {
 
-			xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
+		//	xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
 
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
@@ -66,8 +67,10 @@ func (ms *MandelbrotSet) findMaxValues() {
 					break
 				}
 
-				zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
-				ms.progress = xProgress + yProgress + zProgress
+				ms.progress = progress.Calculate(float32(ky), float32(kx), float32(i))
+
+		//		zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
+		//		ms.progress = xProgress + yProgress + zProgress
 			}
 			if math.Abs(real(z)) > ms.maxAbsX {
 				ms.maxAbsX = math.Abs(real(z))
@@ -86,16 +89,18 @@ func (ms *MandelbrotSet) Generate() error {
 	img := image.NewRGBA(image.Rect(0, 0, ms.imgX, ms.imgY))
 	ms.findMaxValues()
 
-	halfProgress := ms.progress
+	progress := util.NewProgress(
+		2, float32(ms.progress), float32(ms.imgY), float32(ms.imgX), float32(ms.maxIterations),
+	)
 
 	for ky := 0; ky < ms.imgY; ky++ {
 
-		yProgress := float32(ky) / (2 * float32(ms.imgY))
+	//	yProgress := float32(ky) / (2 * float32(ms.imgY))
 
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
 		for kx := 0; kx < ms.imgX; kx++ {
 
-			xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
+	//		xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
 
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
@@ -106,8 +111,10 @@ func (ms *MandelbrotSet) Generate() error {
 					break
 				}
 
-				zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
-				ms.progress = xProgress + yProgress + zProgress + halfProgress
+				ms.progress = progress.Calculate(float32(ky), float32(kx), float32(i))
+
+		//		zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
+		//		ms.progress = xProgress + yProgress + zProgress + halfProgress
 			}
 			v0 := int(255 * math.Abs(real(z)) / ms.maxAbsX)
 			v1 := int(255 * math.Abs(imag(z)) / ms.maxAbsY)
@@ -143,9 +150,9 @@ func (ms *MandelbrotSet) Generate() error {
 
 func (ms *MandelbrotSet) HandleProgress(handler func (int) error) error {
 
-	fmt.Println(fmt.Sprintf("Progress: %f", ms.progress))
+	fmt.Println(fmt.Sprintf("Progress: %d", ms.progress))
 
-	return handler(int(ms.progress * 100))
+	return handler(ms.progress)
 }
 
 func (ms *MandelbrotSet) IsFinished() bool {
