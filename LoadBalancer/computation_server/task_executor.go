@@ -13,12 +13,9 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 	if err == nil {
 		s.runningTasks++
 		go func() {
-			ticker := time.NewTicker(500 * time.Millisecond)
-			defer ticker.Stop()
 			for !task.Generator.IsFinished() {
-				select {
-				case <- ticker.C:
-					err := task.Generator.HandleProgress(func(progress int) error {
+				err := task.Generator.HandleProgress(func(progress int) error {
+					if !task.Generator.IsFinished() {
 						status := "Running"
 						if progress >= 100 {
 							progress = 99
@@ -27,33 +24,32 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 						if err != nil {
 							return err
 						}
-						return nil
-					})
-					if err != nil {
-						fmt.Println(err)
 					}
+					return nil
+				})
+				if err != nil {
+					fmt.Println(err)
 				}
+				time.Sleep(500 * time.Millisecond)
 			}
 		}()
 		go func() {
-			if task.Generator.Generate(&s.interrupt) != nil {
+			err := task.Generator.Generate(s.interrupt)
+			if err != nil {
 				fmt.Println(err)
-			}
-			if s.interrupt[int64(task.Id)] {
-				fmt.Println(fmt.Sprintf("INTERRUPTED: %d", task.Id))
 			} else {
 				fmt.Println("Finished")
 				s.runningTasks--
 				err = sendFractal(task)
 				if err != nil {
-					fmt.Println(err)
+					fmt.Println(err.Error())
 				} else {
 					_, err = s.DbClient.UpdateTask(task.Id, 100, "Finished")
 					if err != nil {
-						fmt.Println(err)
+						fmt.Println(err.Error())
 					}
 					if os.Remove(task.Generator.Path()) != nil {
-						fmt.Println(err)
+						fmt.Println(err.Error())
 					}
 				}
 			}
@@ -64,25 +60,25 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 }
 
 func (s *ComputationServer) InitTaskExecutor() error {
-	queuedTasks, err := s.DbClient.GetTasks(s.queueId, "In Queue", settings.MAX_TASKS_PER_SERVER)
+	queuedTasks, err := s.DbClient.GetTasks(s.QueueId, "In Queue", settings.MAX_TASKS_PER_SERVER)
 	if err != nil {
 		return err
 	}
 	for i := 0; i < settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty(); i++ {
 		taskObj := queuedTasks.Pop()
 		task := taskObj.(models.TaskItem)
-		s.interrupt[int64(task.Id)] = false
+		s.interrupt.Write(int64(task.Id), false)
 		s.executeTask(task)
 	}
 	go func() {
 		for {
 			if s.runningTasks < settings.MAX_TASKS_PER_SERVER {
-				queuedTasks, err := s.DbClient.GetTasks(s.queueId, "In Queue", settings.MAX_TASKS_PER_SERVER)
+				queuedTasks, err := s.DbClient.GetTasks(s.QueueId, "In Queue", settings.MAX_TASKS_PER_SERVER)
 				if err == nil {
 					for s.runningTasks < settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty() {
 						taskObj := queuedTasks.Pop()
 						task := taskObj.(models.TaskItem)
-						s.interrupt[int64(task.Id)] = false
+						s.interrupt.Write(int64(task.Id), false)
 						s.executeTask(task)
 					}
 				} else {

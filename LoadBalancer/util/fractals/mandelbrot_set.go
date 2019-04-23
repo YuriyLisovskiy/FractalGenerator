@@ -1,7 +1,7 @@
 package fractals
 
 import (
-	"fmt"
+	"errors"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	"image"
@@ -52,31 +52,21 @@ func NewMandelbrotSet(taskId int64, x int, y int, maxIterations int, nameAppendi
 	}
 }
 
-func (ms *MandelbrotSet) findMaxValues() {
+func (ms *MandelbrotSet) findMaxValues(stopList *util.AsyncMap) error {
 	progress := util.NewProgress(2, 0, float32(ms.imgY), float32(ms.imgX), float32(ms.maxIterations))
 
-	for ky := 0; ky < ms.imgY; ky++ {
-
-	//	yProgress := float32(ky) / (2 * float32(ms.imgY))
-
+	for ky := 0; ky < ms.imgY && !stopList.Read(ms.taskId); ky++ {
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
-		for kx := 0; kx < ms.imgX; kx++ {
-
-		//	xProgress := float32(kx) / (2 * float32(ms.imgX * ms.imgY))
-
+		for kx := 0; kx < ms.imgX && !stopList.Read(ms.taskId); kx++ {
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
 			z := complex(a, b)
-			for i := 0; i < ms.maxIterations; i++ {
+			for i := 0; i < ms.maxIterations && !stopList.Read(ms.taskId); i++ {
 				z = z*z + c
 				if cmplx.Abs(z) > 2.0 {
 					break
 				}
-
 				ms.progress = progress.Calculate(float32(ky), float32(kx), float32(i))
-
-		//		zProgress := float32(i) / (2 * float32(ms.imgX * ms.imgY * ms.maxIterations))
-		//		ms.progress = xProgress + yProgress + zProgress
 			}
 			if math.Abs(real(z)) > ms.maxAbsX {
 				ms.maxAbsX = math.Abs(real(z))
@@ -89,25 +79,29 @@ func (ms *MandelbrotSet) findMaxValues() {
 			}
 		}
 	}
+	if stopList.Read(ms.taskId) {
+		return errors.New("INTERRUPTED BY SERVER")
+	}
+	return nil
 }
 
-func (ms *MandelbrotSet) Generate(stopList *map[int64]bool) error {
+func (ms *MandelbrotSet) Generate(stopList *util.AsyncMap) error {
 	img := image.NewRGBA(image.Rect(0, 0, ms.imgX, ms.imgY))
-	ms.findMaxValues()
-
+	err := ms.findMaxValues(stopList)
+	if err != nil {
+		ms.isFinished = true
+		return err
+	}
 	progress := util.NewProgress(
 		2, float32(ms.progress), float32(ms.imgY), float32(ms.imgX), float32(ms.maxIterations),
 	)
-
-	fmt.Println((*stopList)[ms.taskId])
-
-	for ky := 0; ky < ms.imgY && !(*stopList)[ms.taskId]; ky++ {
+	for ky := 0; ky < ms.imgY && !stopList.Read(ms.taskId); ky++ {
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
-		for kx := 0; kx < ms.imgX && !(*stopList)[ms.taskId]; kx++ {
+		for kx := 0; kx < ms.imgX && !stopList.Read(ms.taskId); kx++ {
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
 			z := complex(a, b)
-			for i := 0; i < ms.maxIterations && !(*stopList)[ms.taskId]; i++ {
+			for i := 0; i < ms.maxIterations && !stopList.Read(ms.taskId); i++ {
 				z = z*z + c
 				if cmplx.Abs(z) > 2.0 {
 					break
@@ -126,9 +120,9 @@ func (ms *MandelbrotSet) Generate(stopList *map[int64]bool) error {
 			img.Set(kx, ky, color.RGBA{R: red, G: green, B: blue, A: 255})
 		}
 	}
-	if (*stopList)[ms.taskId] {
+	if stopList.Read(ms.taskId) {
 		ms.isFinished = true
-		return nil
+		return errors.New("INTERRUPTED BY SERVER")
 	}
 	ms.progress = 100
 	file, err := os.OpenFile(ms.Path(), os.O_WRONLY|os.O_CREATE, 0600)

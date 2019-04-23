@@ -1,6 +1,8 @@
 package models
 
-import "github.com/YuriyLisovskiy/LoadBalancer/util/fractals"
+import (
+	"github.com/YuriyLisovskiy/LoadBalancer/util/fractals"
+)
 
 type TaskType int
 
@@ -10,16 +12,16 @@ const (
 )
 
 type TaskItem struct {
-	Id       int
-	Title    string
-	OwnerId  int
-	Progress int
-	Status   string
-	Fractal  int
-	QueueId  int
-	TaskType int
-	Width   int
-	Height int
+	Id            int
+	Title         string
+	OwnerId       int
+	Progress      int
+	Status        string
+	Fractal       int
+	QueueId       int
+	TaskType      int
+	Width         int
+	Height        int
 	MaxIterations int
 
 	Generator fractals.Fractal

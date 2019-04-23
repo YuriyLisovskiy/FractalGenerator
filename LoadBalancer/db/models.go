@@ -3,7 +3,7 @@ package db
 import "fmt"
 
 type ServerQueue struct {
-	id            int
+	Id            int
 	ServerHost    string
 	ServerPort    int
 	tasksCount    int
@@ -11,5 +11,5 @@ type ServerQueue struct {
 }
 
 func (sq ServerQueue) String() string {
-	return fmt.Sprintf("Server: id=%d, host='%s', port=%d", sq.id, sq.ServerHost, sq.ServerPort)
+	return fmt.Sprintf("Server: id=%d, host='%s', port=%d", sq.Id, sq.ServerHost, sq.ServerPort)
 }

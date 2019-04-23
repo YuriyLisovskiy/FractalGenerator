@@ -94,25 +94,28 @@ module.exports = {
 				db.getTask(request.body.task_id,
 					(task) => {
 						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
-							db.updateTask(task['id'], 0, 'Not Started',
-								(updTask) => {
-									rpc.popTaskFromServerRemote(
-										{remote_host: task['server_host'], remote_port: task['server_port']},
-										updTask['id'],
+							rpc.popTaskFromServerRemote(
+								{remote_host: task['server_host'], remote_port: task['server_port']},
+								task['id'],
+								(d) => {
+									console.log(d);
+									db.updateTask(task['id'], 0, 'Not Started',
 										() => {
-											util.SendSuccessResponse(response, 200, updTask);
+											util.SendSuccessResponse(response, 200, task);
 										},
 										(err) => {
 											util.SendInternalServerError(response);
-											console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
+											console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
 										}
 									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
+									console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
 								}
 							);
+						} else {
+							util.SendSuccessResponse(response, 200, task);
 						}
 					},
 					(err) => {
@@ -124,31 +127,23 @@ module.exports = {
 			delete_: (request, response) => {
 				db.getTask(request.body.task_id,
 					(task) => {
-						db.updateTask(task['id'], 0, 'Not Started',
+						rpc.popTaskFromServerRemote(
+							{remote_host: task['server_host'], remote_port: task['server_port']},
+							task['id'],
 							() => {
-								rpc.popTaskFromServerRemote(
-									{remote_host: task['server_host'], remote_port: task['server_port']},
-									task['id'],
+								db.deleteTask(task['id'],
 									() => {
-										db.deleteTask(task['id'],
-											(updTask) => {
-												util.SendSuccessResponse(response, 200, updTask);
-											},
-											(err) => {
-												util.SendInternalServerError(response);
-												console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
-											}
-										);
+										util.SendSuccessResponse(response, 200, task);
 									},
 									(err) => {
 										util.SendInternalServerError(response);
-										console.log('[ERROR] administration.AdministrationTask, delete, popTaskFromServerRemote: ' + err.detail);
+										console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
 									}
 								);
 							},
 							(err) => {
 								util.SendInternalServerError(response);
-								console.log('[ERROR] administration.AdministrationTask, delete, updateTask: ' + err.detail);
+								console.log('[ERROR] administration.AdministrationTask, delete, popTaskFromServerRemote: ' + err.detail);
 							}
 						);
 					},

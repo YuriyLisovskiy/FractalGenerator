@@ -163,23 +163,23 @@ module.exports = {
 				db.getUserTask(request.user.id, request.body.task_id,
 					(task) => {
 						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
-							db.updateTask(task['id'], 0, 'Not Started',
-								(updTask) => {
-									rpc.popTaskFromServerRemote(
-										{remote_host: task['server_host'], remote_port: task['server_port']},
-										updTask['id'],
+							rpc.popTaskFromServerRemote(
+								{remote_host: task['server_host'], remote_port: task['server_port']},
+								task['id'],
+								() => {
+									db.updateTask(task['id'], 0, 'Not Started',
 										() => {
-											util.SendSuccessResponse(response, 200, updTask);
+											util.SendSuccessResponse(response, 200, task);
 										},
 										(err) => {
 											util.SendInternalServerError(response);
-											console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
+											console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
 										}
 									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
+									console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
 								}
 							);
 						}
@@ -193,31 +193,23 @@ module.exports = {
 			delete_: (request, response) => {
 				db.getUserTask(request.user.id, request.body.task_id,
 					(task) => {
-						db.updateTask(task['id'], 0, 'Not Started',
+						rpc.popTaskFromServerRemote(
+							{remote_host: task['server_host'], remote_port: task['server_port']},
+							task['id'],
 							() => {
-								rpc.popTaskFromServerRemote(
-									{remote_host: task['server_host'], remote_port: task['server_port']},
-									task['id'],
-									() => {
-										db.deleteTask(task['id'],
-											(updTask) => {
-												util.SendSuccessResponse(response, 200, updTask);
-											},
-											(err) => {
-												util.SendInternalServerError(response);
-												console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
-											}
-										);
+								db.deleteTask(task['id'],
+									(updTask) => {
+										util.SendSuccessResponse(response, 200, updTask);
 									},
 									(err) => {
 										util.SendInternalServerError(response);
-										console.log('[ERROR] profile.UserTask, delete, popTaskFromServerRemote: ' + err.detail);
+										console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
 									}
 								);
 							},
 							(err) => {
 								util.SendInternalServerError(response);
-								console.log('[ERROR] administration.AdministrationTask, delete, updateTask: ' + err.detail);
+								console.log('[ERROR] profile.UserTask, delete, popTaskFromServerRemote: ' + err.detail);
 							}
 						);
 					},
@@ -264,8 +256,7 @@ module.exports = {
 											max_iterations: parseInt(formData.max_iterations),
 											owner_id: request.user.id
 										},
-										(data) => {
-											console.log(data);
+										() => {
 											response.redirect('/user/create/fractal');
 										},
 										(err) => {

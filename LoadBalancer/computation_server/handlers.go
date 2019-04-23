@@ -14,7 +14,7 @@ func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.R
 	maxIterations, _ := claims.GetInt64("max_iterations")
 	ownerId, _ := claims.GetInt64("owner_id")
 	_, err := s.DbClient.CreateTask(
-		int(s.queueId), int(taskType), int(width), int(height), int(maxIterations), int(ownerId),
+		int(s.QueueId), int(taskType), int(width), int(height), int(maxIterations), int(ownerId),
 	)
 	if err != nil {
 		server.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -29,9 +29,9 @@ func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.R
 func (s *ComputationServer) popTask(writer http.ResponseWriter, request *http.Request, claims jwt.Claims) {
 	taskId, _ := claims.GetInt64("task_id")
 
-	_, ok := s.interrupt[taskId]
-	if ok {
-		s.interrupt[taskId] = true
+	_, err := s.interrupt.ReadWitCheck(taskId)
+	if err == nil {
+		s.interrupt.Write(taskId, true)
 		err := server.Response(writer, `{"detail": "task with id ` + strconv.Itoa(int(taskId)) + ` has been stopped"}`, http.StatusOK)
 		if err != nil {
 			server.Error(writer, err.Error(), http.StatusInternalServerError)

@@ -41,17 +41,17 @@ func (s *ServerManager) GetHandlers() *map[string]func(http.ResponseWriter, *htt
 	return &mux
 }
 
-func (s *ServerManager) startComputationServer() (string, int, error) {
+func (s *ServerManager) startComputationServer() (int, string, int, error) {
 	srv, err := computation_server.New(settings.HOST, s.NextPort)
 	if err != nil {
-		return "", 0, err
+		return 0, "", 0, err
 	}
 	s.NextPort++
 	err = srv.InitTaskExecutor()
 	if err != nil {
 		fmt.Println(err)
 		s.NextPort--
-		return "", 0, err
+		return 0, "", 0, err
 	} else {
 		go func(host string, port int) {
 			err = srv.Server.ListenAndServe()
@@ -66,6 +66,6 @@ func (s *ServerManager) startComputationServer() (string, int, error) {
 			}
 			s.NextPort--
 		}(settings.HOST, s.NextPort)
-		return settings.HOST, s.NextPort - 1, nil
+		return srv.QueueId, settings.HOST, s.NextPort - 1, nil
 	}
 }

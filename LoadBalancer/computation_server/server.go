@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/YuriyLisovskiy/LoadBalancer/db"
 	"github.com/YuriyLisovskiy/LoadBalancer/server"
+	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	"net/http"
 )
 
@@ -12,18 +13,18 @@ type ComputationServer struct {
 	port         int
 	DbClient     db.Client
 	Server       http.Server
-	queueId      int
+	QueueId      int
 	runningTasks int
-	interrupt    map[int64]bool
+	interrupt    *util.AsyncMap
 }
 
 func New(host string, port int) (ComputationServer, error) {
 	cs := ComputationServer{
-		host:     host,
-		port:     port,
-		DbClient: db.New(),
+		host:         host,
+		port:         port,
+		DbClient:     db.New(),
 		runningTasks: 0,
-		interrupt: make(map[int64]bool),
+		interrupt: util.NewAsyncMap(),
 	}
 	err := cs.Initialize()
 	if err != nil {
@@ -50,7 +51,7 @@ func (s *ComputationServer) CleanUp() error {
 func (s *ComputationServer) Initialize() error {
 	queueId, err := s.DbClient.CreateServerQueue(s.host, s.port)
 	if err == nil {
-		s.queueId = queueId
+		s.QueueId = queueId
 	}
 	return err
 }
