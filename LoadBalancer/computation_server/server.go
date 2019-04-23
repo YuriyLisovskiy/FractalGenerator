@@ -14,6 +14,7 @@ type ComputationServer struct {
 	Server       http.Server
 	queueId      int
 	runningTasks int
+	interrupt    map[int64]bool
 }
 
 func New(host string, port int) (ComputationServer, error) {
@@ -22,6 +23,7 @@ func New(host string, port int) (ComputationServer, error) {
 		port:     port,
 		DbClient: db.New(),
 		runningTasks: 0,
+		interrupt: make(map[int64]bool),
 	}
 	err := cs.Initialize()
 	if err != nil {

@@ -123,7 +123,7 @@ let UploadFile = (request, keyword, success, failed) => {
 			let oldPath = files[keyword].path;
 			let now = new Date();
 			let dotPos = files[keyword].name.lastIndexOf('.');
-			let name = files[keyword].name.substring(0, dotPos) + '_' + now.getTime() + '_' + files[keyword].name.substring(dotPos);
+			let name = files[keyword].name.substring(0, dotPos) + '_' + now.getTime() + files[keyword].name.substring(dotPos);
 			let newPath = path.resolve('./media/') + '/' + name;
 			mv(oldPath, newPath, function (err) {
 				if (err) {

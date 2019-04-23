@@ -29,10 +29,14 @@ func (s *ComputationServer) pushTask(writer http.ResponseWriter, request *http.R
 func (s *ComputationServer) popTask(writer http.ResponseWriter, request *http.Request, claims jwt.Claims) {
 	taskId, _ := claims.GetInt64("task_id")
 
-	// TODO: stop task execution
-
-	err := server.Response(writer, `{"detail": "task with id ` + strconv.Itoa(int(taskId)) + ` has been stopped"}`, http.StatusOK)
-	if err != nil {
-		server.Error(writer, err.Error(), http.StatusInternalServerError)
+	_, ok := s.interrupt[taskId]
+	if ok {
+		s.interrupt[taskId] = true
+		err := server.Response(writer, `{"detail": "task with id ` + strconv.Itoa(int(taskId)) + ` has been stopped"}`, http.StatusOK)
+		if err != nil {
+			server.Error(writer, err.Error(), http.StatusInternalServerError)
+		}
+	} else {
+		server.Error(writer, `{"detail": "task with id ` + strconv.Itoa(int(taskId)) + ` is not found"}`, http.StatusNotFound)
 	}
 }

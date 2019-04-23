@@ -1,6 +1,7 @@
 package fractals
 
 import (
+	"fmt"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
 	"github.com/YuriyLisovskiy/LoadBalancer/util"
 	"image"
@@ -14,6 +15,8 @@ import (
 )
 
 type MandelbrotSet struct {
+	taskId        int64
+
 	xb            float64
 	yb            float64
 	ya            float64
@@ -30,8 +33,9 @@ type MandelbrotSet struct {
 	isFinished bool
 }
 
-func NewMandelbrotSet(x int, y int, maxIterations int, nameAppendix string) MandelbrotSet {
+func NewMandelbrotSet(taskId int64, x int, y int, maxIterations int, nameAppendix string) MandelbrotSet {
 	return MandelbrotSet {
+		taskId: taskId,
 		xb: 1.0,
 		yb: 1.5,
 		ya: -1.5,
@@ -87,7 +91,7 @@ func (ms *MandelbrotSet) findMaxValues() {
 	}
 }
 
-func (ms *MandelbrotSet) Generate() error {
+func (ms *MandelbrotSet) Generate(stopList *map[int64]bool) error {
 	img := image.NewRGBA(image.Rect(0, 0, ms.imgX, ms.imgY))
 	ms.findMaxValues()
 
@@ -95,18 +99,19 @@ func (ms *MandelbrotSet) Generate() error {
 		2, float32(ms.progress), float32(ms.imgY), float32(ms.imgX), float32(ms.maxIterations),
 	)
 
-	for ky := 0; ky < ms.imgY; ky++ {
+	fmt.Println((*stopList)[ms.taskId])
+
+	for ky := 0; ky < ms.imgY && !(*stopList)[ms.taskId]; ky++ {
 		b := float64(ky)*(ms.yb-ms.ya)/float64(ms.imgY-1) + ms.ya
-		for kx := 0; kx < ms.imgX; kx++ {
+		for kx := 0; kx < ms.imgX && !(*stopList)[ms.taskId]; kx++ {
 			a := float64(kx)*(ms.xb-ms.xa)/float64(ms.imgX-1) + ms.xa
 			c := complex(a, b)
 			z := complex(a, b)
-			for i := 0; i < ms.maxIterations; i++ {
+			for i := 0; i < ms.maxIterations && !(*stopList)[ms.taskId]; i++ {
 				z = z*z + c
 				if cmplx.Abs(z) > 2.0 {
 					break
 				}
-
 				ms.progress = progress.Calculate(float32(ky), float32(kx), float32(i))
 			}
 			v0 := int(255 * math.Abs(real(z)) / ms.maxAbsX)
@@ -120,6 +125,10 @@ func (ms *MandelbrotSet) Generate() error {
 			blue := uint8(colorRGB % 256)
 			img.Set(kx, ky, color.RGBA{R: red, G: green, B: blue, A: 255})
 		}
+	}
+	if (*stopList)[ms.taskId] {
+		ms.isFinished = true
+		return nil
 	}
 	ms.progress = 100
 	file, err := os.OpenFile(ms.Path(), os.O_WRONLY|os.O_CREATE, 0600)
