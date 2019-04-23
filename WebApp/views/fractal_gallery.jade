@@ -13,10 +13,8 @@ block body
 		if has_fractals
 			div(class="page-title")
 				a(class="btn btn-success page-title", href="/user/create/fractal") Generate Fractal
-			div(class="carousel slide", data-ride="carousel", id="fractals-carousel" data-interval="false")
-				div(class="carousel-inner", id="carousel-inner")
-				a(class="carousel-control-next", href="#fractals-carousel", id="slide-next", data-slide="next")
-					span(class="carousel-control-next-icon")
+			div(id="fractals-root")
+			button(class="btn btn-secondary", id="show-more-fractals") Load more
 		else
 			div(class="page-title")
 				h4(class="text-muted page-title") No fractals

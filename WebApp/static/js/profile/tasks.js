@@ -32,6 +32,13 @@ let createTaskRow = (item) => {
 	let title = document.createElement('th');
 	title.appendChild(pTitle);
 
+	let pPictureSize = document.createElement('p');
+	pPictureSize.style.textOverflow = 'word-wrap';
+	pPictureSize.appendChild(document.createTextNode(item['width'] + 'x' + item['width']));
+
+	let pictureSize = document.createElement('th');
+	pictureSize.appendChild(pPictureSize);
+
 	let pProgress = document.createElement('p');
 	pProgress.style.textOverflow = 'word-wrap';
 	pProgress.style.width = '100%';
@@ -93,6 +100,22 @@ let createTaskRow = (item) => {
 						break;
 				}
 				if (data['task_status'] === 'Finished') {
+					if (data['fractal_link'] != null) {
+						let fr = document.getElementById('task_image_' + item['id']);
+						let fLink = document.createElement('a');
+						fLink.href = data['fractal_link'];
+						fLink.className = 'btn btn-dark';
+						fLink.setAttribute('role', 'button');
+						fLink.appendChild(document.createTextNode('Image'));
+						fr.innerHTML = '';
+						fr.appendChild(fLink);
+						if (btnStart.parentNode != null) {
+							btnStart.parentNode.removeChild(btnStart);
+						}
+						if (btnStop.parentNode != null) {
+							btnStop.parentNode.removeChild(btnStop);
+						}
+					}
 					clearInterval(intervalId);
 				}
 			},
@@ -145,9 +168,11 @@ let createTaskRow = (item) => {
 	let tr = document.createElement('tr');
 	tr.setAttribute('id', 'task_row_' + item['id']);
 	tr.appendChild(title);
+	tr.appendChild(pictureSize);
 	tr.appendChild(status);
 	tr.appendChild(progress);
 	let fractal = document.createElement('th');
+	fractal.setAttribute('id', 'task_image_' + item['id']);
 	if (item['fractal_link'] !== null) {
 		let fLink = document.createElement('a');
 		fLink.href = item['fractal_link'];

@@ -52,6 +52,7 @@ module.exports = {
 						util.SendSuccessResponse(response, 200, {
 							task_progress: task.progress,
 							task_status: task.status,
+							fractal_link: task.fractal_link,
 							task_server: tServer
 						});
 					},
@@ -66,7 +67,10 @@ module.exports = {
 					(task) => {
 						if (task['status'] === 'Not Started') {
 							rpc.getAvailableServerRemote(
-								() => {
+								(serverInfo) => {
+
+									console.log('Resume: ', serverInfo);
+
 									db.updateTask(task['id'], 0, 'In Queue',
 										(updTask) => {
 											util.SendSuccessResponse(response, 200, updTask);
@@ -127,25 +131,32 @@ module.exports = {
 			delete_: (request, response) => {
 				db.getTask(request.body.task_id,
 					(task) => {
-						rpc.popTaskFromServerRemote(
-							{remote_host: task['server_host'], remote_port: task['server_port']},
-							task['id'],
-							() => {
-								db.deleteTask(task['id'],
-									() => {
-										util.SendSuccessResponse(response, 200, task);
-									},
-									(err) => {
-										util.SendInternalServerError(response);
-										console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
-									}
-								);
-							},
-							(err) => {
-								util.SendInternalServerError(response);
-								console.log('[ERROR] administration.AdministrationTask, delete, popTaskFromServerRemote: ' + err.detail);
-							}
-						);
+						let deleteTask = (res, ts) => {
+							db.deleteTask(ts['id'],
+								() => {
+									util.SendSuccessResponse(response, 200, ts);
+								},
+								(err) => {
+									util.SendInternalServerError(res);
+									console.log('[ERROR] administration.AdministrationTask, delete, deleteTask: ' + err.detail);
+								}
+							);
+						};
+						if (task['status'] !== 'Finished') {
+							rpc.popTaskFromServerRemote(
+								{remote_host: task['server_host'], remote_port: task['server_port']},
+								task['id'],
+								() => {
+									deleteTask(response, task);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] administration.AdministrationTask, delete, popTaskFromServerRemote: ' + err.detail);
+								}
+							);
+						} else {
+							deleteTask(response, task);
+						}
 					},
 					(err) => {
 						util.SendInternalServerError(response);

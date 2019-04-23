@@ -18,8 +18,8 @@ let requestMiddleware = (url, content, method, success, error) => {
 			error({detail: err});
 		} else {
 			method(url, { json: {key: token} }, (err, res, body) => {
-				if (res >= 400) {
-					error({detail: err == null ? body.detail : err});
+				if (err) {
+					error({detail: err});
 				} else {
 					success(body);
 				}

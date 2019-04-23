@@ -80,7 +80,7 @@ func (ms *MandelbrotSet) findMaxValues(stopList *util.AsyncMap) error {
 		}
 	}
 	if stopList.Read(ms.taskId) {
-		return errors.New("INTERRUPTED BY SERVER")
+		return errors.New("INTERRUPTED BY USER")
 	}
 	return nil
 }
@@ -122,7 +122,7 @@ func (ms *MandelbrotSet) Generate(stopList *util.AsyncMap) error {
 	}
 	if stopList.Read(ms.taskId) {
 		ms.isFinished = true
-		return errors.New("INTERRUPTED BY SERVER")
+		return errors.New("INTERRUPTED BY USER")
 	}
 	ms.progress = 100
 	file, err := os.OpenFile(ms.Path(), os.O_WRONLY|os.O_CREATE, 0600)

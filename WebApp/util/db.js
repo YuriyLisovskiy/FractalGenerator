@@ -121,7 +121,12 @@ class Db {
 	}
 
 	updateTask(task_id, progress, status, success, failed) {
-		this.runQuery('SELECT UpdateTask(($1), ($2), ($3));', [task_id, progress, status], success, failed);
+		this.runQuery(
+			'SELECT UpdateTask(($1), ($2), ($3));',
+			[task_id, progress, status],
+			success,
+			failed
+		);
 	}
 
 	deleteTask(task_id, success, failed) {
@@ -151,7 +156,12 @@ class Db {
 	}
 
 	setFractalIdToTask(task_id, fractal_id, success, failed) {
-		this.runQuery('UPDATE Tasks SET fractal = ($1) WHERE Tasks.id = ($2);', [fractal_id, task_id], success, failed);
+		this.runQuery(
+			'UPDATE Tasks SET fractal = ($1) WHERE Tasks.id = ($2);',
+			[fractal_id, task_id],
+			success,
+			failed
+		);
 	}
 }
 

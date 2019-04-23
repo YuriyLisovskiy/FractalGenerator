@@ -46,7 +46,6 @@ func (s *ServerManager) startComputationServer() (int, string, int, error) {
 	if err != nil {
 		return 0, "", 0, err
 	}
-	s.NextPort++
 	err = srv.InitTaskExecutor()
 	if err != nil {
 		fmt.Println(err)
@@ -57,8 +56,6 @@ func (s *ServerManager) startComputationServer() (int, string, int, error) {
 			err = srv.Server.ListenAndServe()
 			if err != nil {
 				fmt.Println(err)
-				s.NextPort--
-				return
 			}
 			err = srv.CleanUp()
 			if err != nil {
@@ -66,6 +63,7 @@ func (s *ServerManager) startComputationServer() (int, string, int, error) {
 			}
 			s.NextPort--
 		}(settings.HOST, s.NextPort)
+		s.NextPort++
 		return srv.QueueId, settings.HOST, s.NextPort - 1, nil
 	}
 }

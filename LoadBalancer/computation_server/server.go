@@ -16,6 +16,7 @@ type ComputationServer struct {
 	QueueId      int
 	runningTasks int
 	interrupt    *util.AsyncMap
+	isRunning    bool
 }
 
 func New(host string, port int) (ComputationServer, error) {
@@ -24,7 +25,8 @@ func New(host string, port int) (ComputationServer, error) {
 		port:         port,
 		DbClient:     db.New(),
 		runningTasks: 0,
-		interrupt: util.NewAsyncMap(),
+		interrupt:    util.NewAsyncMap(),
+		isRunning:    true,
 	}
 	err := cs.Initialize()
 	if err != nil {

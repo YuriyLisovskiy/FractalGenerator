@@ -14,8 +14,8 @@ const (
 	DB_PASSWORD = "2e7e55bac5442f79c047d13c546f9a29ec60457409873accffa1223cb7aa34d6"
 	DB_NAME = "fractal_generator"
 
-	MAX_SUB_SERVERS = 1
-	MAX_TASKS_PER_SERVER = 2
+	MAX_SUB_SERVERS = 2
+	MAX_TASKS_PER_SERVER = 3
 
 	SITE_HOST = "http://localhost:3000/api/remote/server/load/picture"
 )

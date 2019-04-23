@@ -39,7 +39,6 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 				fmt.Println(err)
 			} else {
 				fmt.Println("Finished")
-				s.runningTasks--
 				err = sendFractal(task)
 				if err != nil {
 					fmt.Println(err.Error())
@@ -53,6 +52,7 @@ func (s *ComputationServer) executeTask(task models.TaskItem) {
 					}
 				}
 			}
+			s.runningTasks--
 		}()
 	} else {
 		fmt.Println(err)
@@ -71,11 +71,11 @@ func (s *ComputationServer) InitTaskExecutor() error {
 		s.executeTask(task)
 	}
 	go func() {
-		for {
+		for s.isRunning {
 			if s.runningTasks < settings.MAX_TASKS_PER_SERVER {
 				queuedTasks, err := s.DbClient.GetTasks(s.QueueId, "In Queue", settings.MAX_TASKS_PER_SERVER)
 				if err == nil {
-					for s.runningTasks < settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty() {
+					for s.runningTasks <= settings.MAX_TASKS_PER_SERVER && !queuedTasks.IsEmpty() {
 						taskObj := queuedTasks.Pop()
 						task := taskObj.(models.TaskItem)
 						s.interrupt.Write(int64(task.Id), false)

@@ -106,11 +106,13 @@ func (c *Client) GetTasks(queueId int, status string, limit int) (util.Queue, er
 			&task.Height, &task.MaxIterations,
 		)
 		var generator fractals.Fractal
+		nameAppendix := fmt.Sprintf("%d_%d", task.Id, task.OwnerId)
 		switch task.TaskType {
+		case models.QuasiCrystal:
+			ms := fractals.NewQuasiCrystal(int64(task.Id), task.Width, task.Height, nameAppendix)
+			generator = &ms
 		default:
-			ms := fractals.NewMandelbrotSet(
-				int64(task.Id), task.Width, task.Height, task.MaxIterations, fmt.Sprintf("%d_%d", task.Id, task.OwnerId),
-			)
+			ms := fractals.NewMandelbrotSet(int64(task.Id), task.Width, task.Height, task.MaxIterations, nameAppendix)
 			generator = &ms
 		}
 		task.Generator = generator

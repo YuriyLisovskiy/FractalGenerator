@@ -3,6 +3,9 @@ extends includes/layout
 block title
 	title Fractals Generator | Generate Fractal
 
+block head
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
+
 block body
 	div(class="container")
 		br
@@ -16,6 +19,7 @@ block body
 							label(class="type-selection")
 							select(class="form-control", id="type-selection", name="task_type")
 								option(value="1") Mandelbrot Set
+								option(value="2") Quasi Crystal
 				div(class="form-group row")
 					label(for="img-width", class="col-sm-4") Width:
 						input(type="number", name="width", class="form-control", id="img-width", placeholder="Type number...", required)
@@ -24,3 +28,10 @@ block body
 					label(for="max-iterations", class="col-sm-4") Max Iterations:
 						input(type="number", name="max_iterations", class="form-control", id="max-iterations", placeholder="Type number...", required)
 				button(type="submit", id="save-profile", class="btn btn-success") Generate
+
+block footer
+	script.
+		$(document).ready(function () {
+			$('[data-toggle="tooltip"]').tooltip();
+		});
+	script(type="module", src="/static/js/create_task.js")

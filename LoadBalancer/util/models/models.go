@@ -8,7 +8,7 @@ type TaskType int
 
 const (
 	MandelbrotSet = iota + 1
-	JuliaSet
+	QuasiCrystal
 )
 
 type TaskItem struct {
@@ -31,8 +31,8 @@ func TypeToTitle(taskType TaskType) string {
 	switch taskType {
 	case MandelbrotSet:
 		return "Mandelbrot Set"
-	case JuliaSet:
-		return "Julia Set"
+	case QuasiCrystal:
+		return "Quasi Crystal"
 	default:
 		return ""
 	}

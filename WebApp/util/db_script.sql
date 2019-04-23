@@ -10,12 +10,13 @@ CREATE TABLE IF NOT EXISTS Users
 
 CREATE TABLE IF NOT EXISTS Fractals
 (
-  id       SERIAL PRIMARY KEY,
-  title    VARCHAR(200)  NOT NULL,
-  url_path VARCHAR(1024) NOT NULL,
-  width    INTEGER       NOT NULL,
-  height   INTEGER       NOT NULL,
-  owner    INTEGER       NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE
+  id         SERIAL PRIMARY KEY,
+  title      VARCHAR(200)  NOT NULL,
+  url_path   VARCHAR(1024) NOT NULL,
+  width      INTEGER       NOT NULL,
+  height     INTEGER       NOT NULL,
+  owner      INTEGER       NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT Now()
 );
 
 CREATE TABLE IF NOT EXISTS ServerQueue
@@ -39,7 +40,8 @@ CREATE TABLE IF NOT EXISTS Tasks
   task_type      INTEGER      NOT NULL,
   width          INTEGER      NOT NULL,
   height         INTEGER      NOT NULL,
-  max_iterations INTEGER      NOT NULL
+  max_iterations INTEGER      NOT NULL,
+  created_at     TIMESTAMP             DEFAULT Now()
 );
 
 CREATE OR REPLACE FUNCTION GetUserFractals(user_id INTEGER)
@@ -57,6 +59,7 @@ BEGIN
     SELECT Fractals.id, Fractals.title, Fractals.url_path, Fractals.width, Fractals.height
     FROM Fractals
     WHERE Fractals.owner = user_id
+    ORDER BY Fractals.created_at DESC
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -114,7 +117,8 @@ SELECT Tasks.id,
 FROM Tasks
        JOIN Users ON Tasks.owner_id = Users.user_id
        LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
-       LEFT JOIN Fractals ON Tasks.fractal = Fractals.id;
+       LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
+ORDER BY Tasks.created_at DESC;
 
 CREATE OR REPLACE FUNCTION GetUserTasksFunction(u_id INTEGER)
   RETURNS TABLE
@@ -144,6 +148,7 @@ BEGIN
            LEFT JOIN ServerQueue ON Tasks.queue_id = ServerQueue.id
            LEFT JOIN Fractals ON Tasks.fractal = Fractals.id
     WHERE Users.user_id = u_id
+    ORDER BY Tasks.created_at DESC
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -183,7 +188,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_width INTEGER,
+CREATE OR REPLACE FUNCTION CreateTask(t_queue_id INTEGER, t_title VARCHAR(512), t_type INTEGER, t_width INTEGER,
                                       t_height INTEGER, t_max_iterations INTEGER, t_owner INTEGER)
   RETURNS TABLE
           (
@@ -191,9 +196,9 @@ CREATE OR REPLACE FUNCTION CreateTask(queue_id INTEGER, t_title VARCHAR(512), t_
           ) AS
 $$
 BEGIN
-  UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE id = queue_id;
+  UPDATE ServerQueue SET tasks_count = tasks_count + 1 WHERE ServerQueue.id = t_queue_id;
   RETURN QUERY INSERT INTO Tasks (title, owner_id, queue_id, task_type, width, height, max_iterations)
-    VALUES (t_title, t_owner, queue_id, t_type, t_width, t_height, t_max_iterations) RETURNING Tasks.id;
+    VALUES (t_title, t_owner, t_queue_id, t_type, t_width, t_height, t_max_iterations) RETURNING Tasks.id;
 END
 $$ LANGUAGE plpgsql;
 
@@ -209,7 +214,9 @@ DECLARE
 BEGIN
   SELECT * FROM Tasks WHERE Tasks.id = task_id INTO task;
   IF (task_status = 'Not Started' OR task_status = 'Finished') AND task.status <> task_status THEN
-    UPDATE ServerQueue SET tasks_count = tasks_count - 1 WHERE id = task.queue_id;
+    UPDATE ServerQueue
+    SET tasks_count = tasks_count - 1
+    WHERE ServerQueue.id = task.queue_id AND ServerQueue.tasks_count > 0;
     RETURN QUERY UPDATE Tasks SET queue_id = NULL, status = task_status, progress = task_progress
       WHERE id = task_id RETURNING Tasks.id;
   ELSEIF (task_status = 'In Queue' AND task.status = 'Not Started') THEN
@@ -235,7 +242,10 @@ DECLARE
 BEGIN
   SELECT * FROM Tasks WHERE Tasks.id = task_id INTO task;
   IF task.queue_id IS NOT NULL THEN
-    UPDATE ServerQueue SET tasks_count = tasks_count - 1 WHERE id = task.queue_id;
+    UPDATE ServerQueue
+    SET tasks_count = tasks_count - 1
+    WHERE ServerQueue.id = task.queue_id
+      AND ServerQueue.tasks_count > 0;
   END IF;
   DELETE FROM Tasks WHERE Tasks.id = task_id;
 END
@@ -372,6 +382,7 @@ BEGIN
     FROM Tasks
     WHERE Tasks.queue_id = q_id
       AND Tasks.status = q_status
+    ORDER BY Tasks.created_at ASC
     LIMIT q_limit
   );
 END

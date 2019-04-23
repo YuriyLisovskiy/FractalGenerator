@@ -77,7 +77,6 @@ module.exports = {
 						let limit = request.body.limit;
 						let page = request.body.page;
 						util.SendSuccessResponse(response, 200, {
-							threshold: data.length > limit ? data.length - 2 : -1,
 							fractals: data.slice(limit * (page - 1), limit * page),
 							pages: Math.ceil(data.length / limit),
 						});
@@ -121,7 +120,8 @@ module.exports = {
 					(task) => {
 						util.SendSuccessResponse(response, 200, {
 							task_progress: task.progress,
-							task_status: task.status
+							task_status: task.status,
+							fractal_link: task.fractal_link
 						});
 					},
 					(err) => {
@@ -131,11 +131,14 @@ module.exports = {
 				);
 			},
 			post: (request, response) => {
-				db.getUserTask(request.user.id, request.body.task_id,
+				db.getTask(request.body.task_id,
 					(task) => {
 						if (task['status'] === 'Not Started') {
 							rpc.getAvailableServerRemote(
-								() => {
+								(serverInfo) => {
+
+									console.log('Resume: ', serverInfo);
+
 									db.updateTask(task['id'], 0, 'In Queue',
 										(updTask) => {
 											util.SendSuccessResponse(response, 200, updTask);
@@ -155,67 +158,77 @@ module.exports = {
 					},
 					(err) => {
 						util.SendInternalServerError(response);
-						console.log('[ERROR] profile.UserTask, post, getUserTask: ' + err.detail);
+						console.log('[ERROR] profile.UserTask, post, getTask: ' + err.detail);
 					}
 				);
 			},
 			put: (request, response) => {
-				db.getUserTask(request.user.id, request.body.task_id,
+				db.getTask(request.body.task_id,
 					(task) => {
 						if (task['status'] === 'In Queue' || task['status'] === 'Running') {
 							rpc.popTaskFromServerRemote(
 								{remote_host: task['server_host'], remote_port: task['server_port']},
 								task['id'],
-								() => {
+								(d) => {
+									console.log(d);
 									db.updateTask(task['id'], 0, 'Not Started',
 										() => {
 											util.SendSuccessResponse(response, 200, task);
 										},
 										(err) => {
 											util.SendInternalServerError(response);
-											console.log('[ERROR] administration.AdministrationTask, put, updateTask: ' + err.detail);
+											console.log('[ERROR] profile.UserTask, put, updateTask: ' + err.detail);
 										}
 									);
 								},
 								(err) => {
 									util.SendInternalServerError(response);
-									console.log('[ERROR] administration.AdministrationTask, put, popTaskFromServerRemote: ' + err.detail);
+									console.log('[ERROR] profile.UserTask, put, popTaskFromServerRemote: ' + err.detail);
 								}
 							);
+						} else {
+							util.SendSuccessResponse(response, 200, task);
 						}
 					},
 					(err) => {
 						util.SendInternalServerError(response);
-						console.log('[ERROR] profile.UserTask, put, getUserTask: ' + err.detail);
+						console.log('[ERROR] profile.UserTask, put, getTask: ' + err.detail);
 					}
 				);
 			},
 			delete_: (request, response) => {
-				db.getUserTask(request.user.id, request.body.task_id,
+				db.getTask(request.body.task_id,
 					(task) => {
-						rpc.popTaskFromServerRemote(
-							{remote_host: task['server_host'], remote_port: task['server_port']},
-							task['id'],
-							() => {
-								db.deleteTask(task['id'],
-									(updTask) => {
-										util.SendSuccessResponse(response, 200, updTask);
-									},
-									(err) => {
-										util.SendInternalServerError(response);
-										console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
-									}
-								);
-							},
-							(err) => {
-								util.SendInternalServerError(response);
-								console.log('[ERROR] profile.UserTask, delete, popTaskFromServerRemote: ' + err.detail);
-							}
-						);
+						let deleteTask = (res, ts) => {
+							db.deleteTask(ts['id'],
+								() => {
+									util.SendSuccessResponse(response, 200, ts);
+								},
+								(err) => {
+									util.SendInternalServerError(res);
+									console.log('[ERROR] profile.UserTask, delete, deleteTask: ' + err.detail);
+								}
+							);
+						};
+						if (task['status'] !== 'Finished') {
+							rpc.popTaskFromServerRemote(
+								{remote_host: task['server_host'], remote_port: task['server_port']},
+								task['id'],
+								() => {
+									deleteTask(response, task);
+								},
+								(err) => {
+									util.SendInternalServerError(response);
+									console.log('[ERROR] profile.UserTask, delete, popTaskFromServerRemote: ' + err.detail);
+								}
+							);
+						} else {
+							deleteTask(response, task);
+						}
 					},
 					(err) => {
 						util.SendInternalServerError(response);
-						console.log('[ERROR] profile.UserTask, delete, getUserTask: ' + err.detail);
+						console.log('[ERROR] profile.UserTask, delete, getTask: ' + err.detail);
 					}
 				);
 			}
