@@ -56,9 +56,8 @@ module.exports = {
 							task_server: tServer
 						});
 					},
-					(err) => {
-						util.SendInternalServerError(response);
-						console.log('[ERROR] administration.AdministrationTask, get, getTask: ' + err.detail);
+					() => {
+						util.SendSuccessResponse(response, 200, {deleted: true});
 					}
 				);
 			},

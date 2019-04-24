@@ -40,11 +40,18 @@ let transporterData = {
 
 const UserTasksLimit = 5;
 
+const ImageWidthLimit = 4000;
+const ImageHeightLimit = 4000;
+const IterationsLimit = 1500;
+
 module.exports = {
 	SecretKey: secret,
 	Db: db,
 	transporterData: transporterData,
 	host: host,
 	UserTasksLimit: UserTasksLimit,
-	RemoteServerRoot: remoteServerRoot
+	RemoteServerRoot: remoteServerRoot,
+	ImageWidthLimit: ImageWidthLimit,
+	ImageHeightLimit: ImageHeightLimit,
+	IterationsLimit: IterationsLimit
 };

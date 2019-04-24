@@ -81,42 +81,54 @@ let createTaskRow = (item) => {
 				task_id: item['id']
 			},
 			success: (data) => {
-				let prs = document.getElementById('progress_' + item['id']);
-				let sts = document.getElementById('status_' + item['id']);
-				prs.innerText = data['task_progress'] + '%';
-				sts.innerText = data['task_status'].toString();
-				switch (data['task_status']) {
-					case 'Running':
-						sts.style.backgroundColor = 'lightgreen';
-						break;
-					case 'Finished':
-						sts.style.backgroundColor = 'lightgray';
-						break;
-					case 'In Queue':
-						sts.style.backgroundColor = 'yellow';
-						break;
-					default:
-						sts.style.backgroundColor = 'transparent';
-						break;
-				}
-				if (data['task_status'] === 'Finished') {
-					if (data['fractal_link'] != null) {
-						let fr = document.getElementById('task_image_' + item['id']);
-						let fLink = document.createElement('a');
-						fLink.href = data['fractal_link'];
-						fLink.className = 'btn btn-dark';
-						fLink.setAttribute('role', 'button');
-						fLink.appendChild(document.createTextNode('Image'));
-						fr.innerHTML = '';
-						fr.appendChild(fLink);
-						if (btnStart.parentNode != null) {
-							btnStart.parentNode.removeChild(btnStart);
-						}
-						if (btnStop.parentNode != null) {
-							btnStop.parentNode.removeChild(btnStop);
-						}
-					}
+				if (data['deleted']) {
+					let currRow = document.getElementById('task_row_' + item['id']);
+					currRow.parentNode.removeChild(currRow);
 					clearInterval(intervalId);
+				} else {
+					let prs = document.getElementById('progress_' + item['id']);
+					let sts = document.getElementById('status_' + item['id']);
+					prs.innerText = data['task_progress'] + '%';
+					sts.innerText = data['task_status'].toString();
+					switch (data['task_status']) {
+						case 'Running':
+							btnStart.setAttribute('disabled', 'true');
+							btnStop.removeAttribute('disabled');
+							sts.style.backgroundColor = 'lightgreen';
+							break;
+						case 'Finished':
+							sts.style.backgroundColor = 'lightgray';
+							break;
+						case 'In Queue':
+							btnStart.setAttribute('disabled', 'true');
+							btnStop.removeAttribute('disabled');
+							sts.style.backgroundColor = 'yellow';
+							break;
+						default:
+							btnStop.setAttribute('disabled', 'true');
+							btnStart.removeAttribute('disabled');
+							sts.style.backgroundColor = 'transparent';
+							break;
+					}
+					if (data['task_status'] === 'Finished') {
+						if (data['fractal_link'] != null) {
+							let fr = document.getElementById('task_image_' + item['id']);
+							let fLink = document.createElement('a');
+							fLink.href = data['fractal_link'];
+							fLink.className = 'btn btn-dark';
+							fLink.setAttribute('role', 'button');
+							fLink.appendChild(document.createTextNode('Image'));
+							fr.innerHTML = '';
+							fr.appendChild(fLink);
+							if (btnStart.parentNode != null) {
+								btnStart.parentNode.removeChild(btnStart);
+							}
+							if (btnStop.parentNode != null) {
+								btnStop.parentNode.removeChild(btnStop);
+							}
+						}
+						clearInterval(intervalId);
+					}
 				}
 			},
 			error: (data) => {

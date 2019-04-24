@@ -6,10 +6,7 @@ import (
 	"github.com/YuriyLisovskiy/LoadBalancer/db"
 	"github.com/YuriyLisovskiy/LoadBalancer/server"
 	"github.com/YuriyLisovskiy/LoadBalancer/settings"
-	"github.com/YuriyLisovskiy/LoadBalancer/util"
-	"log"
 	"net/http"
-	"time"
 )
 
 type ServerManager struct {
@@ -55,22 +52,6 @@ func (s *ServerManager) startComputationServer() (int, string, int, error) {
 		s.NextPort--
 		return 0, "", 0, err
 	} else {
-		go func() {
-			timer := util.NewTimer(1 * time.Second, settings.COMPUTATION_SERVER_TIMEOUT)
-			for {
-				if srv.HasTasks() {
-					timer.Reset()
-				} else {
-					if timer.Finished() {
-						if err := srv.Stop(); err != nil {
-							log.Println(err)
-						}
-						log.Println("Server is stopped due to timeout")
-						return
-					}
-				}
-			}
-		}()
 		go func(host string, port int) {
 			err = srv.Server.ListenAndServe()
 			if err != nil {

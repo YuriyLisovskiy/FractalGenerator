@@ -7,6 +7,10 @@ block head
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
 
 block body
+	if errors
+		each err in errors
+			div(class="alert alert-danger", style="text-align: center;")
+				strong=err
 	div(class="container")
 		br
 		if block_task_creation

@@ -2,7 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="33a33a3e-dbc3-40b3-9e69-6aa3f5a358eb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/administration.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/administration.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/administration/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/administration/tasks.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/create_task.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/create_task.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/profile/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/profile/tasks.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/settings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/create_task.jade" beforeDir="false" afterPath="$PROJECT_DIR$/views/create_task.jade" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -52,11 +58,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5115">
-              <caret line="185" column="17" selection-start-line="185" selection-start-column="17" selection-end-line="185" selection-end-column="17" />
+            <state relative-caret-position="351">
+              <caret line="86" column="26" selection-start-line="86" selection-start-column="26" selection-end-line="86" selection-end-column="26" />
               <folding>
                 <element signature="e#116#548#0" />
               </folding>
@@ -65,19 +71,13 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/views/create_task.jade">
+        <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="868">
-              <caret line="28" column="108" selection-start-line="28" selection-start-column="94" selection-end-line="28" selection-end-column="108" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/static/js/create_task.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="8" column="28" selection-start-line="8" selection-start-column="28" selection-end-line="8" selection-end-column="28" />
+            <state relative-caret-position="444">
+              <caret line="89" column="46" lean-forward="true" selection-start-line="89" selection-start-column="46" selection-end-line="89" selection-end-column="46" />
+              <folding>
+                <element signature="e#116#558#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -111,7 +111,6 @@
         <option value="$PROJECT_DIR$/static/css/layout.css" />
         <option value="$PROJECT_DIR$/views/index.jade" />
         <option value="$PROJECT_DIR$/routes/index.js" />
-        <option value="$PROJECT_DIR$/util/settings.js" />
         <option value="$PROJECT_DIR$/routes/api.js" />
         <option value="$PROJECT_DIR$/handlers/remote.js" />
         <option value="$PROJECT_DIR$/util/util.js" />
@@ -119,17 +118,18 @@
         <option value="$PROJECT_DIR$/util/db.js" />
         <option value="$PROJECT_DIR$/static/css/administration.css" />
         <option value="$PROJECT_DIR$/static/css/profile.css" />
-        <option value="$PROJECT_DIR$/handlers/administration.js" />
         <option value="$PROJECT_DIR$/static/js/fractal_gallery.js" />
-        <option value="$PROJECT_DIR$/handlers/profile.js" />
         <option value="$PROJECT_DIR$/views/administration.jade" />
         <option value="$PROJECT_DIR$/views/profile.jade" />
         <option value="$PROJECT_DIR$/util/db_script.sql" />
         <option value="$PROJECT_DIR$/util/rpc.js" />
-        <option value="$PROJECT_DIR$/static/js/profile/tasks.js" />
-        <option value="$PROJECT_DIR$/static/js/administration/tasks.js" />
         <option value="$PROJECT_DIR$/views/create_task.jade" />
+        <option value="$PROJECT_DIR$/util/settings.js" />
         <option value="$PROJECT_DIR$/static/js/create_task.js" />
+        <option value="$PROJECT_DIR$/handlers/profile.js" />
+        <option value="$PROJECT_DIR$/handlers/administration.js" />
+        <option value="$PROJECT_DIR$/static/js/administration/tasks.js" />
+        <option value="$PROJECT_DIR$/static/js/profile/tasks.js" />
       </list>
     </option>
   </component>
@@ -159,11 +159,6 @@
               <item name="WebApp" type="b2602c69:ProjectViewProjectNode" />
               <item name="WebApp" type="462c0819:PsiDirectoryNode" />
               <item name="handlers" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="WebApp" type="b2602c69:ProjectViewProjectNode" />
-              <item name="WebApp" type="462c0819:PsiDirectoryNode" />
-              <item name="media" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="WebApp" type="b2602c69:ProjectViewProjectNode" />
@@ -261,12 +256,12 @@
       <workItem from="1555951705893" duration="8847000" />
       <workItem from="1556005895865" duration="8961000" />
       <workItem from="1556041938690" duration="12476000" />
-      <workItem from="1556087759518" duration="1813000" />
+      <workItem from="1556087759518" duration="4024000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="126041000" />
+    <option name="totallyTimeSpent" value="128252000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -279,6 +274,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18206973" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -295,7 +291,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5002767" side_tool="true" weight="0.42872807" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4997233" visible="true" weight="0.40679824" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4997233" weight="0.40679824" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -436,13 +432,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/util/util.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3720">
-          <caret line="120" column="24" selection-start-line="120" selection-start-column="24" selection-end-line="120" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/views/includes/layout.jade">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="310">
@@ -515,22 +504,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/handlers/administration.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <element signature="e#199#395#0" />
-            <element signature="e#447#961#0" />
-            <element signature="e#1139#1694#0" />
-            <element signature="e#1728#2667#0" />
-            <element signature="e#2700#3815#0" />
-            <element signature="e#3852#4761#0" />
-            <element signature="e#3961#3978#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/views/profile.jade">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="362">
@@ -538,39 +511,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/handlers/profile.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="169">
-          <caret line="262" column="40" selection-start-line="262" selection-start-column="40" selection-end-line="262" selection-end-column="40" />
-          <folding>
-            <element signature="e#239#1615#0" />
-            <element signature="e#1661#2623#0" />
-            <element signature="e#2665#3173#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/util/rpc.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="635">
           <caret line="22" column="24" lean-forward="true" selection-start-line="22" selection-start-column="24" selection-end-line="22" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/util/settings.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="104" column="30" lean-forward="true" selection-start-line="104" selection-start-column="30" selection-end-line="104" selection-end-column="30" />
-          <folding>
-            <element signature="e#116#558#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -609,27 +553,79 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
+    <entry file="file://$PROJECT_DIR$/views/create_task.jade">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5115">
-          <caret line="185" column="17" selection-start-line="185" selection-start-column="17" selection-end-line="185" selection-end-column="17" />
+        <state relative-caret-position="372">
+          <caret line="12" column="26" lean-forward="true" selection-start-line="12" selection-start-column="26" selection-end-line="12" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/util/util.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2143">
+          <caret line="120" column="24" lean-forward="true" selection-start-line="120" selection-start-column="24" selection-end-line="120" selection-end-column="24" />
           <folding>
-            <element signature="e#116#548#0" />
+            <element signature="n#style#0;n#h3#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#h5#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/create_task.jade">
+    <entry file="file://$PROJECT_DIR$/util/settings.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="868">
-          <caret line="28" column="108" selection-start-line="28" selection-start-column="94" selection-end-line="28" selection-end-column="108" />
+        <state relative-caret-position="98">
+          <caret line="38" column="2" lean-forward="true" selection-start-line="38" selection-start-column="2" selection-end-line="38" selection-end-column="2" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/create_task.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="8" column="28" selection-start-line="8" selection-start-column="28" selection-end-line="8" selection-end-column="28" />
+        <state relative-caret-position="93">
+          <caret line="3" column="12" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/handlers/profile.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="496">
+          <caret line="126" column="28" lean-forward="true" selection-start-line="126" selection-start-column="28" selection-end-line="126" selection-end-column="28" />
+          <folding>
+            <element signature="e#239#1615#0" />
+            <element signature="e#1661#2623#0" />
+            <element signature="e#2665#3173#0" />
+            <element signature="e#6922#9872#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/handlers/administration.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="620">
+          <caret line="58" column="27" lean-forward="true" selection-start-line="58" selection-start-column="27" selection-end-line="58" selection-end-column="27" />
+          <folding>
+            <element signature="e#199#395#0" />
+            <element signature="e#447#961#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/administration/tasks.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="444">
+          <caret line="89" column="46" lean-forward="true" selection-start-line="89" selection-start-column="46" selection-end-line="89" selection-end-column="46" />
+          <folding>
+            <element signature="e#116#558#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/profile/tasks.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="351">
+          <caret line="86" column="26" selection-start-line="86" selection-start-column="26" selection-end-line="86" selection-end-column="26" />
+          <folding>
+            <element signature="e#116#548#0" />
+          </folding>
         </state>
       </provider>
     </entry>

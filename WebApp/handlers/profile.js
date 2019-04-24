@@ -114,7 +114,6 @@ module.exports = {
 		util.HandleAuthRequest({
 			request: request,
 			response: response,
-			sudo_request: true,
 			get: (request, response) => {
 				db.getUserTask(request.user.id, request.query.task_id,
 					(task) => {
@@ -124,9 +123,8 @@ module.exports = {
 							fractal_link: task.fractal_link
 						});
 					},
-					(err) => {
-						util.SendInternalServerError(response);
-						console.log('[ERROR] profile.UserTask, get, getUserTask: ' + err.detail);
+					() => {
+						util.SendSuccessResponse(response, 200, {deleted: true});
 					}
 				);
 			},
@@ -257,32 +255,58 @@ module.exports = {
 						if (data['countuseractivetasks'] >= settings.UserTasksLimit) {
 							response.redirect('/user/create/fractal');
 						} else {
-							rpc.getAvailableServerRemote(
-								(serverInfo) => {
-									let formData = request.body;
-									rpc.pushTaskToServerRemote(
-										serverInfo,
-										{
-											task_type: parseInt(formData.task_type),
-											width: parseInt(formData.width),
-											height: parseInt(formData.height),
-											max_iterations: parseInt(formData.max_iterations),
-											owner_id: request.user.id
-										},
-										() => {
-											response.redirect('/user/create/fractal');
-										},
-										(err) => {
-											util.SendInternalServerError(response, err);
-											console.log('[ERROR] profile.CreateTask, post, pushTaskToServerRemote: ' + err.detail);
-										}
-									);
-								},
-								(err) => {
-									util.SendInternalServerError(response, err);
-									console.log('[ERROR] profile.CreateTask, post, getAvailableServerRemote: ' + err.detail);
-								}
-							);
+							let formData = request.body;
+							let renderPage = (request, response, ctx) => {
+								db.countUserActiveTasks(request.user.id,
+									(data) => {
+									ctx['block_task_creation'] = data['countuseractivetasks'] >= settings.UserTasksLimit
+										util.Render(request, response, 'create_task', ctx);
+									},
+									(err) => {
+										util.SendInternalServerError(response);
+										console.log('[ERROR] profile.CreateTask, post, countUserActiveTasks: ' + err.detail);
+									}
+								);
+							};
+							let errors = [];
+							if (formData.width > settings.ImageWidthLimit) {
+								errors.push('Image width is too large, maximum is ' + settings.ImageWidthLimit);
+							}
+							if (formData.height > settings.ImageHeightLimit) {
+								errors.push('Image height is too large, maximum is ' + settings.ImageHeightLimit);
+							}
+							if (formData.max_iterations > settings.IterationsLimit) {
+								errors.push('Too mush iterations, maximum is ' + settings.IterationsLimit);
+							}
+							if (errors.length > 0) {
+								renderPage(request, response, {errors: errors});
+							} else {
+								rpc.getAvailableServerRemote(
+									(serverInfo) => {
+										rpc.pushTaskToServerRemote(
+											serverInfo,
+											{
+												task_type: parseInt(formData.task_type),
+												width: parseInt(formData.width),
+												height: parseInt(formData.height),
+												max_iterations: parseInt(formData.max_iterations),
+												owner_id: request.user.id
+											},
+											() => {
+												renderPage(request, response, {});
+											},
+											(err) => {
+												util.SendInternalServerError(response, err);
+												console.log('[ERROR] profile.CreateTask, post, pushTaskToServerRemote: ' + err.detail);
+											}
+										);
+									},
+									(err) => {
+										util.SendInternalServerError(response, err);
+										console.log('[ERROR] profile.CreateTask, post, getAvailableServerRemote: ' + err.detail);
+									}
+								);
+							}
 						}
 					},
 					(err) => {
