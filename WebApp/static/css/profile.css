@@ -1,3 +1,8 @@
 #save-profile {
 	float: right;
 }
+
+.create-task-btn {
+	float: right;
+	margin-right: 20px;
+}

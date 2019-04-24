@@ -1,0 +1,24 @@
+extends includes/layout
+
+block title
+	title Fractals Generator | Gallery
+
+block head
+	link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
+	link(rel="stylesheet", href="/static/css/fractal_gallery.css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
+
+block body
+	div(class="container")
+		if has_fractals
+			div(class="page-title")
+				a(class="btn btn-success page-title", href="/user/create/fractal") Generate Fractal
+			div(id="fractals-root")
+			button(class="btn btn-secondary", id="show-more-fractals") Load more
+		else
+			div(class="page-title")
+				h4(class="text-muted page-title") No fractals
+				a(class="btn btn-success page-title", href="/user/create/fractal") Generate Fractal
+
+block footer
+	script(type="module", src="/static/js/fractal_gallery.js")

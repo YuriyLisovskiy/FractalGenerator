@@ -12,6 +12,8 @@ block head
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js")
 
 block body
+	div(class="page-title create-task-btn")
+		a(class="btn btn-success page-title", href="/user/create/fractal") Create Task
 	div(class="container")
 		br
 		ul(class="nav nav-tabs", role="tablist")
@@ -36,6 +38,7 @@ block body
 					thead(class="thead-dark")
 						tr
 							th Title
+							th Picture Size (px)
 							th Status
 							th Progress
 							th Result

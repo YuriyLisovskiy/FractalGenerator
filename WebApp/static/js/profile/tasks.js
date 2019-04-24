@@ -32,6 +32,13 @@ let createTaskRow = (item) => {
 	let title = document.createElement('th');
 	title.appendChild(pTitle);
 
+	let pPictureSize = document.createElement('p');
+	pPictureSize.style.textOverflow = 'word-wrap';
+	pPictureSize.appendChild(document.createTextNode(item['width'] + 'x' + item['width']));
+
+	let pictureSize = document.createElement('th');
+	pictureSize.appendChild(pPictureSize);
+
 	let pProgress = document.createElement('p');
 	pProgress.style.textOverflow = 'word-wrap';
 	pProgress.style.width = '100%';
@@ -45,8 +52,6 @@ let createTaskRow = (item) => {
 	status.setAttribute('id', 'status_' + item['id']);
 	status.appendChild(document.createTextNode(item['status']));
 	switch (item['status']) {
-		case 'Not Started':
-			break;
 		case 'Running':
 			status.style.backgroundColor = 'lightgreen';
 			break;
@@ -55,6 +60,9 @@ let createTaskRow = (item) => {
 			break;
 		case 'In Queue':
 			status.style.backgroundColor = 'yellow';
+			break;
+		default:
+			status.style.backgroundColor = 'transparent';
 			break;
 	}
 	let btnStart = createManageButton('Start', 'POST', item['id'], 'start_' + item['id'], () => {
@@ -73,25 +81,54 @@ let createTaskRow = (item) => {
 				task_id: item['id']
 			},
 			success: (data) => {
-				if (data['task_status'] === 'Finished') {
+				if (data['deleted']) {
+					let currRow = document.getElementById('task_row_' + item['id']);
+					currRow.parentNode.removeChild(currRow);
 					clearInterval(intervalId);
-				}
-				let prs = document.getElementById('progress_' + item['id']);
-				let sts = document.getElementById('status_' + item['id']);
-				prs.innerText = data['task_progress'] + '%';
-				sts.innerText = data['task_status'].toString();
-				switch (data['task_status']) {
-					case 'Not Started':
-						break;
-					case 'Running':
-						sts.style.backgroundColor = 'lightgreen';
-						break;
-					case 'Finished':
-						sts.style.backgroundColor = 'lightgray';
-						break;
-					case 'In Queue':
-						sts.style.backgroundColor = 'yellow';
-						break;
+				} else {
+					let prs = document.getElementById('progress_' + item['id']);
+					let sts = document.getElementById('status_' + item['id']);
+					prs.innerText = data['task_progress'] + '%';
+					sts.innerText = data['task_status'].toString();
+					switch (data['task_status']) {
+						case 'Running':
+							btnStart.setAttribute('disabled', 'true');
+							btnStop.removeAttribute('disabled');
+							sts.style.backgroundColor = 'lightgreen';
+							break;
+						case 'Finished':
+							sts.style.backgroundColor = 'lightgray';
+							break;
+						case 'In Queue':
+							btnStart.setAttribute('disabled', 'true');
+							btnStop.removeAttribute('disabled');
+							sts.style.backgroundColor = 'yellow';
+							break;
+						default:
+							btnStop.setAttribute('disabled', 'true');
+							btnStart.removeAttribute('disabled');
+							sts.style.backgroundColor = 'transparent';
+							break;
+					}
+					if (data['task_status'] === 'Finished') {
+						if (data['fractal_link'] != null) {
+							let fr = document.getElementById('task_image_' + item['id']);
+							let fLink = document.createElement('a');
+							fLink.href = data['fractal_link'];
+							fLink.className = 'btn btn-dark';
+							fLink.setAttribute('role', 'button');
+							fLink.appendChild(document.createTextNode('Image'));
+							fr.innerHTML = '';
+							fr.appendChild(fLink);
+							if (btnStart.parentNode != null) {
+								btnStart.parentNode.removeChild(btnStart);
+							}
+							if (btnStop.parentNode != null) {
+								btnStop.parentNode.removeChild(btnStop);
+							}
+						}
+						clearInterval(intervalId);
+					}
 				}
 			},
 			error: (data) => {
@@ -109,6 +146,7 @@ let createTaskRow = (item) => {
 		case 'Not Started':
 			btnStop.setAttribute('disabled', 'true');
 			break;
+		case 'In Queue':
 		case 'Running':
 			btnStart.setAttribute('disabled', 'true');
 			break;
@@ -142,9 +180,11 @@ let createTaskRow = (item) => {
 	let tr = document.createElement('tr');
 	tr.setAttribute('id', 'task_row_' + item['id']);
 	tr.appendChild(title);
+	tr.appendChild(pictureSize);
 	tr.appendChild(status);
 	tr.appendChild(progress);
 	let fractal = document.createElement('th');
+	fractal.setAttribute('id', 'task_image_' + item['id']);
 	if (item['fractal_link'] !== null) {
 		let fLink = document.createElement('a');
 		fLink.href = item['fractal_link'];
