@@ -1,6 +1,7 @@
 package computation_server
 
 import (
+	"context"
 	"fmt"
 	"github.com/YuriyLisovskiy/LoadBalancer/db"
 	"github.com/YuriyLisovskiy/LoadBalancer/server"
@@ -56,4 +57,16 @@ func (s *ComputationServer) Initialize() error {
 		s.QueueId = queueId
 	}
 	return err
+}
+
+func (s *ComputationServer) HasTasks() bool {
+	return s.runningTasks > 0
+}
+
+func (s *ComputationServer) Stop() error {
+	s.isRunning = false
+	if err := s.Server.Shutdown(context.Background()); err != nil {
+		return err
+	}
+	return nil
 }
